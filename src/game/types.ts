@@ -1,0 +1,60 @@
+import type { Vec2 } from '@/core/vec';
+import type { BranchId } from './evolution/tree';
+import type { Stats } from './evolution/stats';
+
+export type CreatureKind = 'player' | 'bot';
+
+export type BotState = 'wander' | 'hunt' | 'flee' | 'graze';
+
+export interface BotBrain {
+  state: BotState;
+  targetId: number | null;
+  /** Wander heading in radians; drifts slowly so bots don't jitter. */
+  wanderAngle: number;
+  thinkTimer: number;
+  /** Personality knobs so bots don't all behave identically. */
+  aggression: number;
+  caution: number;
+}
+
+export interface Creature {
+  id: number;
+  kind: CreatureKind;
+  name: string;
+  pos: Vec2;
+  /** Unit direction the creature is currently moving. */
+  dir: Vec2;
+  /** Unit direction the creature wants to move. Movement eases dir toward this. */
+  heading: Vec2;
+  mass: number;
+  maxMass: number;
+  /** Chosen branches, tier 0 first. Length 0..4. */
+  path: BranchId[];
+  stats: Stats;
+  hue: number;
+  alive: boolean;
+  kills: number;
+  spawnedAt: number;
+  invulnUntil: number;
+  lastKillerId: number | null;
+  revengeUntil: number;
+  bot: BotBrain | null;
+}
+
+export interface Orb {
+  id: number;
+  pos: Vec2;
+  mass: number;
+  radius: number;
+  hue: number;
+  alive: boolean;
+}
+
+export interface RoundStats {
+  maxMass: number;
+  kills: number;
+  revengeKills: number;
+  survivedSec: number;
+  finalTier: number;
+  path: BranchId[];
+}
