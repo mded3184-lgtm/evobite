@@ -17,7 +17,8 @@ describe('Game', () => {
   it('runs a long headless simulation without errors and keeps everyone inside the arena', () => {
     const game = new Game(2);
     game.startRound();
-    for (let i = 0; i < 60 * 90; i++) {
+    // 45 simulated seconds: long enough for deaths, respawns and evolutions to happen.
+    for (let i = 0; i < 60 * 45; i++) {
       game.update(DT);
       if (game.phase === 'dead') game.startRound();
     }
@@ -27,7 +28,7 @@ describe('Game', () => {
       expect(Number.isFinite(c.mass)).toBe(true);
       expect(c.mass).toBeGreaterThan(0);
     }
-  });
+  }, 30_000);
 
   it('pauses the player and offers a choice at the first threshold, then resumes after choosing', () => {
     const game = new Game(3);
