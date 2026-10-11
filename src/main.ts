@@ -91,6 +91,8 @@ async function boot(): Promise<void> {
     sdk.gameplayStart();
   };
 
+  let respawning = false;
+
   const toMenu = (): void => {
     death.hide();
     pauseScreen.hide();
@@ -154,9 +156,13 @@ async function boot(): Promise<void> {
   );
   const death = new DeathScreen(overlay, {
     onRespawn: () => {
+      // Clicks, Enter and held Space can all fire this; only the first one counts.
+      if (respawning) return;
+      respawning = true;
       sfx.unlock();
       sfx.suspend();
       void sdk.showMidgameAd().then(() => {
+        respawning = false;
         sfx.resume();
         startRound();
       });
@@ -237,7 +243,7 @@ async function boot(): Promise<void> {
 
   // Dev-only handle for debugging and browser smoke tests; stripped from production builds.
   if (import.meta.env.DEV) {
-    (window as unknown as { evobite: Game }).evobite = game;
+    Object.assign(window, { evobite: game, evobiteRenderer: renderer });
   }
 
   // Leaving the tab opens the pause menu, so coming back never drops you into danger.

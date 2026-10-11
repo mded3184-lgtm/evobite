@@ -31,20 +31,32 @@ export class GameLoop {
     cancelAnimationFrame(this.rafId);
   }
 
+  private lastErrorAt = -Infinity;
+
   private readonly frame = (now: number): void => {
     if (!this.running) return;
+    // Schedule the next frame first: an exception in one frame must never stop the game
+    // (that used to freeze the screen until a reload).
+    this.rafId = requestAnimationFrame(this.frame);
     let elapsed = (now - this.last) / 1000;
     this.last = now;
     // Clamp long gaps (tab switch) so we never spiral trying to catch up.
     if (elapsed > GameLoop.MAX_FRAME) elapsed = GameLoop.MAX_FRAME;
     this.accumulator += elapsed;
 
-    while (this.accumulator >= GameLoop.STEP) {
-      this.callbacks.update(GameLoop.STEP);
-      this.accumulator -= GameLoop.STEP;
+    try {
+      while (this.accumulator >= GameLoop.STEP) {
+        this.callbacks.update(GameLoop.STEP);
+        this.accumulator -= GameLoop.STEP;
+      }
+      this.callbacks.render(this.accumulator / GameLoop.STEP);
+    } catch (err) {
+      this.accumulator = 0;
+      // Log at most once every few seconds so a repeating error can't flood the console.
+      if (now - this.lastErrorAt > 5000) {
+        this.lastErrorAt = now;
+        console.error('Frame failed, continuing', err);
+      }
     }
-
-    this.callbacks.render(this.accumulator / GameLoop.STEP);
-    this.rafId = requestAnimationFrame(this.frame);
   };
 }

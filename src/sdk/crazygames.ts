@@ -7,6 +7,8 @@ import type { PlatformSdk } from './types';
  */
 interface CrazyGamesSdk {
   init(): Promise<void>;
+  /** 'crazygames' on the portal, 'local' on localhost, 'disabled' on any other host. */
+  environment?: string;
   game: {
     gameplayStart(): void;
     gameplayStop(): void;
@@ -34,6 +36,11 @@ declare global {
   }
 }
 
+/** How long to wait for an ad to start before giving up and resuming the game. */
+const AD_START_TIMEOUT_MS = 4000;
+/** Hard cap for a running ad, in case its finish callback never arrives. */
+const AD_MAX_MS = 45000;
+
 export class CrazyGamesAdapter implements PlatformSdk {
   readonly name = 'crazygames';
   private readonly fallback = new MockSdk();
@@ -44,6 +51,9 @@ export class CrazyGamesAdapter implements PlatformSdk {
     if (!sdk) return;
     try {
       await sdk.init();
+      // Outside CrazyGames (e.g. GitHub Pages) the SDK is 'disabled': its calls may throw or
+      // never call back. Use it only where it actually works.
+      if (sdk.environment === 'disabled') return;
       this.sdk = sdk;
     } catch (err) {
       console.warn('CrazyGames SDK failed to init, running without it', err);
@@ -51,21 +61,55 @@ export class CrazyGamesAdapter implements PlatformSdk {
   }
 
   gameplayStart(): void {
-    this.sdk?.game.gameplayStart();
+    this.safe((sdk) => {
+      sdk.game.gameplayStart();
+    });
   }
   gameplayStop(): void {
-    this.sdk?.game.gameplayStop();
+    this.safe((sdk) => {
+      sdk.game.gameplayStop();
+    });
   }
   happyTime(): void {
-    this.sdk?.game.happytime();
+    this.safe((sdk) => {
+      sdk.game.happytime();
+    });
   }
+
+  /**
+   * Always resolves: when the ad finishes or errors, when it fails to start within a few
+   * seconds, or after a hard cap. A respawn can never get stuck behind an ad.
+   */
   showMidgameAd(): Promise<void> {
     const sdk = this.sdk;
     if (!sdk) return this.fallback.showMidgameAd();
     return new Promise((resolve) => {
-      sdk.ad.requestAd('midgame', { adFinished: resolve, adError: resolve });
+      let done = false;
+      let startTimer = 0;
+      let capTimer = 0;
+      const finish = (): void => {
+        if (done) return;
+        done = true;
+        window.clearTimeout(startTimer);
+        window.clearTimeout(capTimer);
+        resolve();
+      };
+      startTimer = window.setTimeout(finish, AD_START_TIMEOUT_MS);
+      capTimer = window.setTimeout(finish, AD_MAX_MS);
+      try {
+        sdk.ad.requestAd('midgame', {
+          adStarted: () => {
+            window.clearTimeout(startTimer);
+          },
+          adFinished: finish,
+          adError: finish,
+        });
+      } catch {
+        finish();
+      }
     });
   }
+
   getItem(key: string): string | null {
     try {
       return this.sdk?.data.getItem(key) ?? this.fallback.getItem(key);
@@ -75,19 +119,30 @@ export class CrazyGamesAdapter implements PlatformSdk {
   }
   setItem(key: string, value: string): void {
     this.fallback.setItem(key, value);
-    try {
-      this.sdk?.data.setItem(key, value);
-    } catch {
-      /* data module unavailable; local copy is enough */
-    }
+    this.safe((sdk) => {
+      sdk.data.setItem(key, value);
+    });
   }
   canShare(): boolean {
     return this.sdk !== null;
   }
   share(): void {
-    const link = this.sdk?.game.inviteLink({});
-    if (link && 'share' in navigator) {
-      void navigator.share({ title: 'EvoBite', url: link }).catch(() => undefined);
+    this.safe((sdk) => {
+      const link = sdk.game.inviteLink({});
+      if ('share' in navigator) {
+        void navigator.share({ title: 'EvoBite', url: link }).catch(() => undefined);
+      }
+    });
+  }
+
+  /** SDK calls must never break the game. */
+  private safe(fn: (sdk: CrazyGamesSdk) => void): void {
+    const sdk = this.sdk;
+    if (!sdk) return;
+    try {
+      fn(sdk);
+    } catch (err) {
+      console.warn('CrazyGames SDK call failed', err);
     }
   }
 }

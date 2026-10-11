@@ -1,6 +1,6 @@
 :root {
   --bg: #0b1020;
-  --panel: rgba(16, 22, 42, 0.92);
+  --panel: rgba(16, 22, 42, 0.96);
   --text: #e8ecf3;
   --muted: #8d97b3;
   --accent: #35e0a1;
@@ -71,7 +71,6 @@ body {
   padding: 28px 24px;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
 }
 
 .logo {
@@ -635,7 +634,6 @@ body {
   border-radius: 22px;
   padding: 22px 26px 18px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(10px);
   animation: rise 0.35s cubic-bezier(0.2, 1.2, 0.4, 1);
 }
 .lobby-top {

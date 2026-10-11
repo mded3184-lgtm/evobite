@@ -11,9 +11,13 @@ export interface DeathHandlers {
   onMenu: () => void;
 }
 
+/** Keyboard respawn is ignored for this long after the death screen appears. */
+const KEY_RESPAWN_DELAY_MS = 700;
+
 /** Post-round summary. Respawn is the primary action; one click, no friction. */
 export class DeathScreen {
   private readonly root: HTMLElement;
+  private shownAt = 0;
 
   constructor(
     container: HTMLElement,
@@ -22,6 +26,12 @@ export class DeathScreen {
     this.root = el('div', 'screen death hidden');
     container.appendChild(this.root);
     window.addEventListener('keydown', (e) => {
+      // Ignore auto-repeat: a player who dies while holding Space to boost must not respawn
+      // instantly (or several times) just because the key is still down.
+      if (e.repeat) return;
+      // Also ignore keys for a moment after death, so mashing Space to boost can't skip
+      // the death screen by accident.
+      if (performance.now() - this.shownAt < KEY_RESPAWN_DELAY_MS) return;
       if (!this.root.classList.contains('hidden') && (e.key === ' ' || e.key === 'Enter')) {
         e.preventDefault();
         this.handlers.onRespawn();
@@ -30,6 +40,7 @@ export class DeathScreen {
   }
 
   show(stats: RoundStats, killerName: string, progress: Progress): void {
+    this.shownAt = performance.now();
     const coins = coinsForRound(stats);
     this.root.innerHTML = `
       <div class="panel">

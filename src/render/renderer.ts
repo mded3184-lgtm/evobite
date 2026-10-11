@@ -10,6 +10,10 @@ import { drawCreatureArt } from './creatureArt';
 import { Particles } from './particles';
 
 const BG = '#0b1020';
+/** Background camera in the lobby zooms as if following a creature of at most this mass. */
+const MENU_ZOOM_MASS = 150;
+/** Orb hues are quantized to this many buckets so orbs can be drawn in a few batched fills. */
+export const ORB_HUE_BUCKETS = 12;
 const GRID = 'rgba(255,255,255,0.045)';
 const WALL = 'rgba(255, 80, 120, 0.55)';
 
@@ -81,8 +85,18 @@ export class Renderer {
 
   update(dt: number): void {
     const world = this.game.world;
-    const focus = world.player?.alive ? world.player : world.leaderboard(1)[0];
-    if (focus) this.camera.follow(focus.pos, focus.mass, dt);
+    const p = world.player;
+    if (p?.alive) {
+      this.camera.follow(p.pos, p.mass, dt);
+    } else if (p) {
+      // Kill cam: watch the killer, but keep the zoom you died with. Following a giant's zoom
+      // would pull the camera out over the whole arena and redraw every orb each frame.
+      const killer = p.lastKillerId === null ? undefined : world.creatures.get(p.lastKillerId);
+      this.camera.follow(killer?.alive ? killer.pos : p.pos, p.mass, dt);
+    } else {
+      const leader = world.leaderboard(1)[0];
+      if (leader) this.camera.follow(leader.pos, Math.min(leader.mass, MENU_ZOOM_MASS), dt);
+    }
     this.particles.update(dt);
     this.pulse = Math.max(0, this.pulse - dt * 1.5);
   }
@@ -151,17 +165,24 @@ export class Renderer {
     const cam = this.camera;
     const s = cam.scale;
     const half = cam.visibleHalf(20);
+    // One path per colour bucket: ~12 fill calls per frame instead of one per orb.
+    const paths: Path2D[] = [];
     for (const orb of this.game.world.orbs) {
       if (!orb.alive) continue;
-      if (Math.abs(orb.pos.x - cam.pos.x) > half.x || Math.abs(orb.pos.y - cam.pos.y) > half.y)
+      if (Math.abs(orb.pos.x - cam.pos.x) > half.x || Math.abs(orb.pos.y - cam.pos.y) > half.y) {
         continue;
+      }
+      const bucket = Math.floor(((orb.hue % 360) / 360) * ORB_HUE_BUCKETS);
+      const path = (paths[bucket] ??= new Path2D());
       const p = cam.worldToScreen(orb.pos);
       const r = Math.max(1.5, orb.radius * s);
-      ctx.fillStyle = `hsl(${String(orb.hue)} 85% 62%)`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.fill();
+      path.moveTo(p.x + r, p.y);
+      path.arc(p.x, p.y, r, 0, Math.PI * 2);
     }
+    paths.forEach((path, bucket) => {
+      ctx.fillStyle = `hsl(${String((bucket * 360) / ORB_HUE_BUCKETS)} 85% 62%)`;
+      ctx.fill(path);
+    });
   }
 
   private drawCreatures(): void {
