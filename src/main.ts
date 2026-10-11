@@ -4,7 +4,7 @@ import { Input } from '@/core/input';
 import { Keyboard } from '@/core/keyboard';
 import { GameLoop } from '@/core/loop';
 import { CONFIG } from '@/config';
-import { recordRound } from '@/game/economy';
+import { buySkin, recordRound, selectSkin } from '@/game/economy';
 import type { Progress } from '@/game/economy';
 import { BRANCHES } from '@/game/evolution/tree';
 import { Game } from '@/game/game';
@@ -14,7 +14,8 @@ import { loadProgress, saveProgress } from '@/sdk/storage';
 import { must } from '@/ui/dom';
 import { EvolutionPicker } from '@/ui/evolutionPicker';
 import { Hud } from '@/ui/hud';
-import { DeathScreen, MenuScreen, PauseScreen } from '@/ui/screens';
+import { Lobby } from '@/ui/lobby';
+import { DeathScreen, PauseScreen } from '@/ui/screens';
 
 const MUTE_KEY = 'evobite.muted';
 
@@ -31,7 +32,15 @@ async function boot(): Promise<void> {
   const keyboard = new Keyboard();
   const sfx = new Sfx(sdk.getItem(MUTE_KEY) === '1');
   let progress: Progress = loadProgress(sdk);
+  game.playerSkin = progress.selectedSkin;
   const savedName = sdk.getItem('evobite.name') ?? '';
+
+  const commitProgress = (next: Progress): void => {
+    progress = next;
+    game.playerSkin = progress.selectedSkin;
+    saveProgress(sdk, progress);
+    menu.render(progress);
+  };
 
   // ---- pause / sound ------------------------------------------------------
 
@@ -99,7 +108,7 @@ async function boot(): Promise<void> {
     onQuit: toMenu,
   });
 
-  const menu = new MenuScreen(
+  const menu = new Lobby(
     overlay,
     {
       onPlay: (name) => {
@@ -108,6 +117,27 @@ async function boot(): Promise<void> {
         game.playerName = name;
         sdk.setItem('evobite.name', name);
         startRound();
+      },
+      onBuy: (skinId) => {
+        sfx.unlock();
+        const result = buySkin(progress, skinId);
+        if (!result.ok) {
+          sfx.deny();
+          return false;
+        }
+        sfx.coin();
+        sdk.happyTime();
+        commitProgress(result.progress);
+        return true;
+      },
+      onSelect: (skinId) => {
+        sfx.unlock();
+        sfx.click();
+        commitProgress(selectSkin(progress, skinId));
+      },
+      onClick: () => {
+        sfx.unlock();
+        sfx.click();
       },
     },
     savedName,
@@ -164,8 +194,7 @@ async function boot(): Promise<void> {
     hud.hide();
     sfx.death();
     sdk.gameplayStop();
-    progress = recordRound(progress, stats, Game.completedFormKey(stats));
-    saveProgress(sdk, progress);
+    commitProgress(recordRound(progress, stats, Game.completedFormKey(stats)));
     death.show(stats, killer.name, progress);
   });
 

@@ -24,6 +24,21 @@ function touching(world: World, a: Creature, b: Creature): boolean {
   return distSq(a.pos, b.pos) <= r * r;
 }
 
+/**
+ * Venom scales with the *smaller* of the two masses, so a tiny venomous creature can annoy
+ * a giant but can't melt it. Draining the giant's own mass made small venom builds farm
+ * huge creatures in seconds.
+ */
+export function applyVenom(world: World, source: Creature, target: Creature, dt: number): void {
+  if (source.stats.venomDps <= 0 || target.invulnUntil > world.time) return;
+  const base = Math.min(source.mass, target.mass);
+  const drained = base * source.stats.venomDps * (1 - target.stats.venomResist) * dt;
+  if (drained <= 0) return;
+  target.mass = Math.max(1, target.mass - drained);
+  source.mass += drained * CONFIG.venom.gainFraction;
+  source.maxMass = Math.max(source.maxMass, source.mass);
+}
+
 function absorb(world: World, eater: Creature, prey: Creature): void {
   const revenge =
     eater.lastKillerId === prey.id && world.time <= eater.revengeUntil && eater.kind === 'player';
@@ -82,16 +97,8 @@ export function eatingSystem(world: World, dt: number): void {
       if (!touching(world, a, b)) continue;
 
       // Venom: drain while touching, both directions, respecting resistance.
-      if (a.stats.venomDps > 0 && b.invulnUntil <= world.time) {
-        const drained = b.mass * a.stats.venomDps * (1 - b.stats.venomResist) * dt;
-        b.mass = Math.max(1, b.mass - drained);
-        a.mass += drained * 0.5;
-      }
-      if (b.stats.venomDps > 0 && a.invulnUntil <= world.time) {
-        const drained = a.mass * b.stats.venomDps * (1 - a.stats.venomResist) * dt;
-        a.mass = Math.max(1, a.mass - drained);
-        b.mass += drained * 0.5;
-      }
+      applyVenom(world, a, b, dt);
+      applyVenom(world, b, a, dt);
 
       // Predation. Spawn protection blocks being eaten, never eating.
       if (b.invulnUntil <= world.time && canEat(a, b) && isOverlapping(world, a, b)) {

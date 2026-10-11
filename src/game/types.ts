@@ -32,6 +32,8 @@ export interface Creature {
   path: BranchId[];
   stats: Stats;
   hue: number;
+  /** Cosmetic skin id, or null for the plain hue-based look. */
+  skin: string | null;
   alive: boolean;
   kills: number;
   spawnedAt: number;

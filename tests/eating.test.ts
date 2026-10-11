@@ -117,6 +117,31 @@ describe('eatingSystem', () => {
     expect(venom.mass - 50).toBeCloseTo((50 - other.mass) * 0.5);
   });
 
+  it('venom scales with the smaller mass, so a tiny venom creature cannot melt a giant', () => {
+    const w = worldWith();
+    const tiny = spawn(w, 'bot', 'tiny', 20, { x: 0, y: 0 });
+    tiny.stats = statsForPath(['swift', 'venom']);
+    const giant = spawn(w, 'bot', 'giant', 400, { x: w.radiusFor(400), y: 0 });
+    giant.stats = statsForPath(['swift', 'venom']); // giant also venomous, no armor
+    tiny.stats = statsForPath(['swift', 'venom']);
+    eatingSystem(w, 1);
+    // One second of contact costs the giant at most 4% of the *tiny* mass.
+    expect(400 - giant.mass).toBeLessThanOrEqual(20 * 0.04 + 1e-9);
+    // And the tiny creature can't farm more than half of that.
+    expect(tiny.mass).toBeLessThan(20 + 20 * 0.04);
+  });
+
+  it('armor resists venom', () => {
+    const w = worldWith();
+    const venom = spawn(w, 'bot', 'v', 50, { x: 0, y: 0 });
+    venom.stats = statsForPath(['swift', 'venom']);
+    const plain = spawn(w, 'bot', 'p', 50, { x: w.radiusFor(50) * 2 - 1, y: 0 });
+    const armored = spawn(w, 'bot', 'a', 50, { x: -(w.radiusFor(50) * 2 - 1), y: 0 });
+    armored.stats = statsForPath(['bulk', 'armor']);
+    eatingSystem(w, 1);
+    expect(50 - armored.mass).toBeLessThan((50 - plain.mass) * 0.5);
+  });
+
   it('orbs are eaten with the food multiplier and pulled by grazers', () => {
     const w = worldWith();
     const grazer = spawn(w, 'bot', 'g', 50, { x: 0, y: 0 });

@@ -1,4 +1,5 @@
 import { CONFIG } from '@/config';
+import { DEFAULT_SKIN_ID, getSkin, isSkinId } from './skins';
 import type { RoundStats } from './types';
 
 export function coinsForRound(stats: RoundStats): number {
@@ -42,10 +43,13 @@ export function mergeProgress(partial: unknown): Progress {
   if (Array.isArray(p.formsUnlocked)) {
     base.formsUnlocked = p.formsUnlocked.filter((n): n is number => typeof n === 'number');
   }
-  if (typeof p.selectedSkin === 'string') base.selectedSkin = p.selectedSkin;
   if (Array.isArray(p.ownedSkins)) {
-    const owned = p.ownedSkins.filter((s): s is string => typeof s === 'string');
-    base.ownedSkins = owned.includes('classic') ? owned : ['classic', ...owned];
+    const owned = p.ownedSkins.filter((s): s is string => typeof s === 'string' && isSkinId(s));
+    base.ownedSkins = owned.includes(DEFAULT_SKIN_ID) ? owned : [DEFAULT_SKIN_ID, ...owned];
+  }
+  // Only keep a selection the player actually owns.
+  if (typeof p.selectedSkin === 'string' && base.ownedSkins.includes(p.selectedSkin)) {
+    base.selectedSkin = p.selectedSkin;
   }
   return base;
 }
@@ -66,4 +70,31 @@ export function recordRound(
   next.rounds += 1;
   if (formKey !== null && !next.formsUnlocked.includes(formKey)) next.formsUnlocked.push(formKey);
   return next;
+}
+
+export type BuyResult =
+  { ok: true; progress: Progress } | { ok: false; reason: 'unknown' | 'owned' | 'coins' };
+
+/** Buys and equips a skin. Never mutates the input. */
+export function buySkin(progress: Progress, skinId: string): BuyResult {
+  const skin = getSkin(skinId);
+  if (!skin) return { ok: false, reason: 'unknown' };
+  if (progress.ownedSkins.includes(skinId)) return { ok: false, reason: 'owned' };
+  if (progress.coins < skin.price) return { ok: false, reason: 'coins' };
+  return {
+    ok: true,
+    progress: {
+      ...progress,
+      formsUnlocked: [...progress.formsUnlocked],
+      coins: progress.coins - skin.price,
+      ownedSkins: [...progress.ownedSkins, skinId],
+      selectedSkin: skinId,
+    },
+  };
+}
+
+/** Equips an owned skin; returns the progress unchanged if it isn't owned. */
+export function selectSkin(progress: Progress, skinId: string): Progress {
+  if (!progress.ownedSkins.includes(skinId)) return progress;
+  return { ...progress, selectedSkin: skinId };
 }

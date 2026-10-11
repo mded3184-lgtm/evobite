@@ -53,6 +53,12 @@ export const CONFIG = {
     eliteChance: 0.15,
     eliteMassMin: 120,
     eliteMassMax: 380,
+    /** Share of bots wearing a shop skin. */
+    skinChance: 0.25,
+  },
+  venom: {
+    /** Share of drained mass the venomous creature keeps. */
+    gainFraction: 0.5,
   },
   boost: {
     /** Speed multiplier while boosting. */

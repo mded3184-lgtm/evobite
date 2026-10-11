@@ -1,5 +1,6 @@
 import { CONFIG } from '@/config';
 import { randomName } from '../names';
+import { SKINS } from '../skins';
 import type { World } from '../world';
 
 /**
@@ -42,6 +43,12 @@ export function spawnBot(world: World): void {
     ? world.rng.range(bots.eliteMassMin, bots.eliteMassMax)
     : world.rng.range(bots.spawnMassMin, bots.spawnMassMax);
   const bot = world.spawnCreature('bot', randomName(world.rng), mass);
+  // Some bots wear a paid skin, like real players would. Rarer skins appear less often.
+  if (world.rng.chance(CONFIG.bots.skinChance)) {
+    const skin = world.rng.pick(SKINS.slice(1, world.rng.chance(0.3) ? SKINS.length : 6));
+    bot.skin = skin.id;
+    bot.hue = skin.hue;
+  }
   // Elites arrive already evolved so the player meets real builds, not blank giants.
   if (elite) {
     bot.invulnUntil = world.time; // no spawn protection for giants

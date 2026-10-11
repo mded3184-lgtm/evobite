@@ -4,6 +4,7 @@ import type { Vec2 } from '@/core/vec';
 import type { BranchId } from './evolution/tree';
 import { formKey, TIER_COUNT } from './evolution/tree';
 import { boostSystem } from './systems/boost';
+import { DEFAULT_SKIN_ID, getSkin } from './skins';
 import { botSystem } from './systems/bots';
 import { decaySystem } from './systems/decay';
 import { eatingSystem } from './systems/eating';
@@ -24,6 +25,7 @@ export class Game {
   readonly world: World;
   phase: GamePhase = 'menu';
   playerName = 'you';
+  playerSkin: string = DEFAULT_SKIN_ID;
   private revengeKills = 0;
   private userPaused = false;
   private lastRound: RoundStats | null = null;
@@ -60,7 +62,9 @@ export class Game {
       CONFIG.player.startMass,
       spawn,
     );
-    player.hue = 165;
+    const skin = getSkin(this.playerSkin) ?? getSkin(DEFAULT_SKIN_ID);
+    player.skin = skin?.id ?? null;
+    player.hue = skin?.hue ?? 165;
     if (lastKiller !== null && this.world.creatures.get(lastKiller)?.alive) {
       player.lastKillerId = lastKiller;
       player.revengeUntil = this.world.time + CONFIG.revenge.windowSec;

@@ -14,12 +14,12 @@ An eat-and-grow arena where every 30 seconds you choose what you become.
 
 ## Evolution tree
 
-| Tier | Mass | Option A (offensive)                                  | Option B (defensive)                                 |
-| ---- | ---- | ----------------------------------------------------- | ---------------------------------------------------- |
-| 1    | 30   | **Swift** +22% speed                                  | **Bulk** +35% food, −8% speed, +10% absorb           |
-| 2    | 80   | **Venom** drain 7%/s of touching creatures, gain half | **Armor** need 1.45× to be eaten, 70% venom resist   |
-| 3    | 200  | **Hunter** +60% vision, eat at 1.12×, +8% speed       | **Grazer** orb magnet 150u, +25% food                |
-| 4    | 480  | **Apex** eat at 1.05×, +15% absorb                    | **Titan** no decay, need 1.6× to be eaten, −5% speed |
+| Tier | Mass | Option A (offensive)                                               | Option B (defensive)                                 |
+| ---- | ---- | ------------------------------------------------------------------ | ---------------------------------------------------- |
+| 1    | 30   | **Swift** +22% speed                                               | **Bulk** +35% food, −8% speed, +10% absorb           |
+| 2    | 80   | **Venom** drain 4%/s of the smaller mass while touching, gain half | **Armor** need 1.45× to be eaten, 70% venom resist   |
+| 3    | 200  | **Hunter** +60% vision, eat at 1.12×, +8% speed                    | **Grazer** orb magnet 150u, +25% food                |
+| 4    | 480  | **Apex** eat at 1.05×, +15% absorb                                 | **Titan** no decay, need 1.6× to be eaten, −5% speed |
 
 16 final forms, each with a name ("Dart Viper", "Iron Colossus"…) so players talk about builds.
 Bots pick branches too, biased by an aggression personality, so the arena contains real builds.
@@ -53,8 +53,10 @@ away from a predator that is right on them, and aggressive bots lunge at prey in
 
 - **Revenge**: your last killer is ringed in red for 45 s after respawn; eating it gives +35%
   bonus mass and +15 coins.
-- **Coins**: `0.1 × max mass + 5 × kills + 15 × revenge kills` per round, persisted. Spent on
-  skins (next milestone).
+- **Coins**: `0.1 × max mass + 5 × kills + 15 × revenge kills` per round, persisted.
+- **Skins**: 10 skins from free Mint to 2600-coin Rainbow (gradients, stripes, spots, stars,
+  glow, animated shine and rainbow). A quarter of bots wear paid skins so players see them in
+  action before buying. The death screen nudges when a new skin is affordable.
 - **Form collection**: each completed form is recorded; a "16/16 forms" screen is the long-term
   goal.
 
@@ -68,7 +70,7 @@ away from a predator that is right on them, and aggressive bots lunge at prey in
 
 1. **MVP (this repo)**: full loop, 8 branches, bots, revenge, coins, HUD, SDK hooks.
 2. **Juice pass**: sound (Web Audio, no files), screen shake on kill, eat squash animation.
-3. **Shop**: 6–8 skins for coins, 1 rewarded-ad skin.
+3. **Shop**: done (10 skins). Next: one rewarded-ad skin.
 4. **Form codex**: 16-form grid with silhouettes, unlocked ones in colour.
 5. **Daily challenge**: seeded arena with a fixed bot roster and a shareable score.
 6. **Metrics-driven tuning**: watch CrazyGames Basic Launch numbers (playtime, conversion,

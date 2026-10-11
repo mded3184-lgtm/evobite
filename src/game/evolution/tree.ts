@@ -39,9 +39,9 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     id: 'venom',
     tier: 1,
     name: 'Venom',
-    blurb: 'Anything that touches you loses mass. You gain half of it.',
+    blurb: 'Creatures touching you slowly lose mass. You gain half of it.',
     tags: ['drain on touch'],
-    patch: { venomDps: 0.07 },
+    patch: { venomDps: 0.04 },
   },
   armor: {
     id: 'armor',

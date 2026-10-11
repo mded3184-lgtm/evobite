@@ -74,6 +74,7 @@ export class World {
       path: [],
       stats: statsForPath([]),
       hue: this.rng.int(0, 359),
+      skin: null,
       alive: true,
       kills: 0,
       spawnedAt: this.time,

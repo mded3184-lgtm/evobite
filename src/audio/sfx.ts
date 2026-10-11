@@ -120,6 +120,17 @@ export class Sfx {
     this.noise({ dur: 0.25, gain: 0.25, filter: 600 });
   }
 
+  /** Purchase: bright two-note coin sound. */
+  coin(): void {
+    this.tone({ freq: 988, dur: 0.08, type: 'square', gain: 0.1 });
+    this.tone({ freq: 1319, dur: 0.25, type: 'square', gain: 0.1, delay: 0.08 });
+  }
+
+  /** Not enough coins. */
+  deny(): void {
+    this.tone({ freq: 180, to: 140, dur: 0.18, type: 'square', gain: 0.1 });
+  }
+
   click(): void {
     this.tone({ freq: 660, dur: 0.05, type: 'square', gain: 0.07 });
   }
