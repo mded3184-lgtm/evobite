@@ -92,6 +92,7 @@ export class World {
               thinkTimer: this.rng.range(0, CONFIG.bots.thinkInterval),
               aggression: this.rng.range(0.4, 1),
               caution: this.rng.range(0.4, 1),
+              buildPlan: null,
             }
           : null,
     };

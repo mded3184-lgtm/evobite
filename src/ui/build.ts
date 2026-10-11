@@ -4,14 +4,14 @@ import { BRANCHES, TIER_COUNT } from '@/game/evolution/tree';
 
 /** Short, always-visible reminder of what each chosen branch does. */
 export const BRANCH_SHORT: Readonly<Record<BranchId, string>> = {
-  swift: '+22% speed',
-  bulk: '+35% from orbs',
+  swift: '+18% speed',
+  bulk: '+28% from orbs',
   venom: 'drains on touch',
   armor: 'hard to eat',
   hunter: 'eat at +12%',
   grazer: 'pulls orbs',
   apex: 'eat at +5%',
-  titan: 'no decay',
+  titan: 'slow decay',
 };
 
 /** HTML for the build strip: chosen branches as chips, future tiers as locked slots. */

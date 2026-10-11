@@ -14,12 +14,12 @@ An eat-and-grow arena where every 30 seconds you choose what you become.
 
 ## Evolution tree
 
-| Tier | Mass | Option A (offensive)                                               | Option B (defensive)                                 |
-| ---- | ---- | ------------------------------------------------------------------ | ---------------------------------------------------- |
-| 1    | 30   | **Swift** +22% speed                                               | **Bulk** +35% food, −8% speed, +10% absorb           |
-| 2    | 80   | **Venom** drain 4%/s of the smaller mass while touching, gain half | **Armor** need 1.45× to be eaten, 70% venom resist   |
-| 3    | 200  | **Hunter** +60% vision, eat at 1.12×, +8% speed                    | **Grazer** orb magnet 150u, +25% food                |
-| 4    | 480  | **Apex** eat at 1.05×, +15% absorb                                 | **Titan** no decay, need 1.6× to be eaten, −5% speed |
+| Tier | Mass | Option A (offensive)                                          | Option B (defensive)                                        |
+| ---- | ---- | ------------------------------------------------------------- | ----------------------------------------------------------- |
+| 1    | 30   | **Swift** +18% speed                                          | **Bulk** +28% food, +10% absorb, −3% speed                  |
+| 2    | 80   | **Venom** drain 2.2%/s of the smaller mass, gain half         | **Armor** need 1.5× to be eaten, 70% venom resist           |
+| 3    | 200  | **Hunter** +60% vision, eat at 1.08×, +30% absorb, +10% speed | **Grazer** orb magnet 50u                                   |
+| 4    | 480  | **Apex** eat at 1.05×, +30% absorb, +5% speed                 | **Titan** 40% less decay, need 1.3× to be eaten, −10% speed |
 
 16 final forms, each with a name ("Dart Viper", "Iron Colossus"…) so players talk about builds.
 Bots pick branches too, biased by an aggression personality, so the arena contains real builds.
@@ -39,13 +39,23 @@ stops at mass 16, so a hatchling can't burn itself away. Half of the burned mass
 you as small orbs in your colour: a chase leaves a trail others can feed on. Bots panic-boost
 away from a predator that is right on them, and aggressive bots lunge at prey in reach.
 
+## Balance
+
+Numbers come from `npm run balance`: a headless simulator that locks bots to each of the 16
+builds evenly and runs many seeds. It reports average mass, kills and deaths per minute per
+build and per perk pair. Target: every pair within ±10–15% of its partner (seed noise alone is
+about ±10%). Latest run (16 seeds × 6 min): Swift +9 / Bulk −9, Venom −6 / Armor +6,
+Hunter −2 / Grazer +2, Apex +8 / Titan −8. Best build is 1.5× the worst (it was 16× before).
+
 ## Rules that keep the arena honest
 
 - **Eat ratio**: attacker needs `max(attacker.eatRatio, prey.beEatenRatio)` × prey mass, and the
-  prey's centre must be well inside the attacker's body. No "edge-touch" deaths.
+  prey's centre must be inside the attacker's body by 40% of the prey's radius. No edge-touch
+  deaths, but prey doesn't have to be fully swallowed either.
 - **Spawn protection**: 2 seconds, prevents being eaten, not eating.
-- **Decay**: above 150 mass, 1.2%/s of the excess is lost (Titan: 0).
-- **Speed**: `420 / mass^0.18`, so a hatchling is ~1.7× faster than a 480-mass giant.
+- **Decay**: above 120 mass, 2%/s of the excess is lost, multiplied by `1 + mass / 1200` so giants
+  bleed faster (Titan: 60% of that). Largest creatures settle around 1300–2600 mass.
+- **Speed**: `420 / mass^0.15`, so a hatchling is ~1.5× faster than a 480-mass giant.
 - **Elite bots**: 15% of respawns arrive at 120–380 mass so there is always something to fear
   and something worth hunting.
 

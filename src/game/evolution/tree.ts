@@ -23,17 +23,17 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     id: 'swift',
     tier: 0,
     name: 'Swift',
-    blurb: 'Move 22% faster. Catch prey, escape anything.',
+    blurb: 'Move 18% faster. Catch prey, escape anything.',
     tags: ['+speed'],
-    patch: { speedMult: 0.22 },
+    patch: { speedMult: 0.18 },
   },
   bulk: {
     id: 'bulk',
     tier: 0,
     name: 'Bulk',
-    blurb: 'Orbs give 35% more mass. Grow fat, grow fast.',
-    tags: ['+food', '-speed'],
-    patch: { foodMult: 0.35, speedMult: -0.08, absorbMult: 0.1 },
+    blurb: 'Orbs give 28% more mass. Grow fat, grow fast.',
+    tags: ['+food', '+absorb'],
+    patch: { foodMult: 0.28, speedMult: -0.03, absorbMult: 0.1 },
   },
   venom: {
     id: 'venom',
@@ -41,47 +41,47 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Venom',
     blurb: 'Creatures touching you slowly lose mass. You gain half of it.',
     tags: ['drain on touch'],
-    patch: { venomDps: 0.04 },
+    patch: { venomDps: 0.022 },
   },
   armor: {
     id: 'armor',
     tier: 1,
     name: 'Armor',
-    blurb: 'Enemies need to be 45% bigger to eat you. Shrugs off venom.',
+    blurb: 'Enemies need to be 50% bigger to eat you. Shrugs off venom.',
     tags: ['hard to eat', 'venom resist'],
-    patch: { beEatenRatio: 1.45, venomResist: 0.7 },
+    patch: { beEatenRatio: 1.5, venomResist: 0.7 },
   },
   hunter: {
     id: 'hunter',
     tier: 2,
     name: 'Hunter',
-    blurb: 'See prey from afar and need less size advantage to eat.',
-    tags: ['+vision', 'easier kills'],
-    patch: { senseMult: 0.6, eatRatio: 1.12, speedMult: 0.08 },
+    blurb: 'Spot prey from afar, eat it at +8% size and absorb 30% more.',
+    tags: ['+vision', 'easier kills', '+absorb'],
+    patch: { senseMult: 0.6, eatRatio: 1.08, speedMult: 0.1, absorbMult: 0.3 },
   },
   grazer: {
     id: 'grazer',
     tier: 2,
     name: 'Grazer',
-    blurb: 'Pull orbs toward you from a distance. Never stop growing.',
-    tags: ['orb magnet', '+food'],
-    patch: { magnetRadius: 150, foodMult: 0.25 },
+    blurb: 'Pull nearby orbs toward you. Never stop growing.',
+    tags: ['orb magnet'],
+    patch: { magnetRadius: 50 },
   },
   apex: {
     id: 'apex',
     tier: 3,
     name: 'Apex',
-    blurb: 'Eat anything even slightly smaller than you. Absorb more of it.',
+    blurb: 'Eat anything 5% smaller than you. Absorb 30% more of it.',
     tags: ['eat at 5%', '+absorb'],
-    patch: { eatRatio: 1.05, absorbMult: 0.15 },
+    patch: { eatRatio: 1.05, absorbMult: 0.3, speedMult: 0.05 },
   },
   titan: {
     id: 'titan',
     tier: 3,
     name: 'Titan',
-    blurb: 'Never lose mass to decay. Very hard to bring down.',
-    tags: ['no decay', 'harder to eat'],
-    patch: { decayMult: 0, beEatenRatio: 1.6, speedMult: -0.05 },
+    blurb: 'Lose mass 40% slower. Enemies need to be 30% bigger to eat you.',
+    tags: ['slow decay', 'harder to eat', '-speed'],
+    patch: { decayMult: 0.6, beEatenRatio: 1.3, speedMult: -0.1 },
   },
 };
 
@@ -133,7 +133,8 @@ const FORM_NAMES: readonly string[] = [
 export function formKey(path: readonly BranchId[]): number {
   let key = 0;
   path.forEach((id, tier) => {
-    if (TIERS[tier]?.[1] === id) key |= 1 << tier;
+    // Tier 0 is the most significant bit, matching the FORM_NAMES table order.
+    if (TIERS[tier]?.[1] === id) key |= 1 << (TIER_COUNT - 1 - tier);
   });
   return key;
 }

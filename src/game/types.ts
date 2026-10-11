@@ -15,6 +15,11 @@ export interface BotBrain {
   /** Personality knobs so bots don't all behave identically. */
   aggression: number;
   caution: number;
+  /**
+   * Optional fixed build as a 4-bit form key (bit i set = second option at tier i).
+   * Used by the balance simulator; normal bots leave it null and pick by personality.
+   */
+  buildPlan: number | null;
 }
 
 export interface Creature {

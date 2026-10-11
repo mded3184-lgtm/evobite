@@ -98,7 +98,9 @@ export function botSystem(world: World, dt: number): void {
       steerAway(me, p.threat.pos);
       // Panic boost when the predator is really close.
       const panic = myR * 3 + world.radiusFor(p.threat.mass) * 1.5;
-      me.boosting = me.mass > CONFIG.boost.botMinMass && p.threatDistSq < panic * panic;
+      // Only cautious bots panic-boost, so prey is catchable more often than not.
+      me.boosting =
+        me.mass > CONFIG.boost.botMinMass && brain.caution > 0.7 && p.threatDistSq < panic * panic;
       continue;
     }
 

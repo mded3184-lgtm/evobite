@@ -19,17 +19,19 @@ export const CONFIG = {
     radiusBase: 6,
     /** speed = speedBase / mass^speedExp; big creatures are slower. */
     speedBase: 420,
-    speedExp: 0.18,
+    speedExp: 0.15,
     minSpeed: 95,
     /** Attacker must be this many times heavier than prey to eat it. */
     eatRatio: 1.18,
     /** Prey center must be inside attacker circle by this fraction of prey radius. */
-    eatOverlap: 0.55,
+    eatOverlap: 0.4,
     /** Mass retained from eaten creature (rest is "lost" to keep the curve sane). */
     absorbFraction: 0.8,
     /** Mass lost per second as a fraction, applied above decayStartMass. */
-    decayRate: 0.012,
-    decayStartMass: 150,
+    decayRate: 0.02,
+    decayStartMass: 120,
+    /** Decay speeds up with size: rate x (1 + mass / decaySoftCap). Stops runaway giants. */
+    decaySoftCap: 1200,
   },
   orbs: {
     count: 1100,

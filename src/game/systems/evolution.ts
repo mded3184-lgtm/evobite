@@ -43,6 +43,10 @@ export function evolutionSystem(world: World): void {
     }
     const [first, second] = optionsForTier(c.path.length);
     const brain = c.bot;
+    if (brain?.buildPlan != null) {
+      applyBranch(world, c, brain.buildPlan & (1 << c.path.length) ? second : first);
+      continue;
+    }
     // Aggressive bots lean toward the offensive side of each tier (always the first option).
     const offensiveBias = brain ? 0.35 + brain.aggression * 0.4 : 0.5;
     applyBranch(world, c, world.rng.chance(offensiveBias) ? first : second);

@@ -41,6 +41,14 @@ describe('evolution tree', () => {
     expect(keys.size).toBe(16);
   });
 
+  it('names each complete form after its actual branches', () => {
+    expect(formName(['swift', 'venom', 'hunter', 'apex'])).toBe('Dart Viper');
+    expect(formName(['swift', 'venom', 'hunter', 'titan'])).toBe('Dart Leviathan');
+    expect(formName(['swift', 'armor', 'hunter', 'apex'])).toBe('Bolt Shrike');
+    expect(formName(['bulk', 'venom', 'hunter', 'apex'])).toBe('Brute Viper');
+    expect(formName(['bulk', 'armor', 'grazer', 'titan'])).toBe('Iron Colossus');
+  });
+
   it('names incomplete paths after the hatchling or the latest branch', () => {
     expect(formName([])).toBe('Hatchling');
     expect(formName(['swift'])).toBe('Swift');
@@ -62,9 +70,9 @@ describe('derived stats', () => {
 
   it('stacks additive multipliers and keeps the strongest ratio perks', () => {
     const s = statsForPath(['swift', 'armor', 'hunter', 'apex']);
-    expect(s.speedMult).toBeCloseTo(1.3);
+    expect(s.speedMult).toBeCloseTo(1.33);
     expect(s.eatRatio).toBe(1.05); // apex beats hunter's 1.12 and base 1.18
-    expect(s.beEatenRatio).toBe(1.45);
+    expect(s.beEatenRatio).toBe(1.5);
     expect(s.venomResist).toBe(0.7);
   });
 
@@ -77,8 +85,8 @@ describe('derived stats', () => {
     }
   });
 
-  it('titan disables decay without touching others', () => {
-    expect(statsForPath(['bulk', 'venom', 'grazer', 'titan']).decayMult).toBe(0);
+  it('titan slows decay without touching others', () => {
+    expect(statsForPath(['bulk', 'venom', 'grazer', 'titan']).decayMult).toBe(0.6);
     expect(statsForPath(['bulk', 'venom', 'grazer', 'apex']).decayMult).toBe(1);
   });
 });

@@ -6,11 +6,13 @@ import type { World } from '../world';
  * hunting slowly shrinks back into the pack, and Titan's "no decay" perk means something.
  */
 export function decaySystem(world: World, dt: number): void {
-  const { decayRate, decayStartMass } = CONFIG.creature;
+  const { decayRate, decayStartMass, decaySoftCap } = CONFIG.creature;
   for (const c of world.creatures.values()) {
     if (!c.alive || c.mass <= decayStartMass) continue;
     if (world.paused && c.kind === 'player') continue;
     const excess = c.mass - decayStartMass;
-    c.mass -= excess * decayRate * c.stats.decayMult * dt;
+    // Soft cap: giants bleed faster, so nobody can grow to fill the arena.
+    const sizeFactor = 1 + c.mass / decaySoftCap;
+    c.mass -= excess * decayRate * sizeFactor * c.stats.decayMult * dt;
   }
 }

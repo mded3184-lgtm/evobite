@@ -40,8 +40,8 @@ describe('canEat', () => {
     const prey = spawn(w, 'bot', 'p', 100);
     expect(canEat(attacker, prey)).toBe(true);
     prey.stats = statsForPath(['swift', 'armor']);
-    expect(canEat(attacker, prey)).toBe(false); // needs 1.45x now
-    attacker.mass = 146;
+    expect(canEat(attacker, prey)).toBe(false); // needs 1.5x now
+    attacker.mass = 150;
     expect(canEat(attacker, prey)).toBe(true);
 
     const apex = spawn(w, 'bot', 'apex', 106);
@@ -146,7 +146,8 @@ describe('eatingSystem', () => {
     const w = worldWith();
     const grazer = spawn(w, 'bot', 'g', 50, { x: 0, y: 0 });
     grazer.stats = statsForPath(['bulk', 'armor', 'grazer']);
-    const far = w.spawnOrb({ x: w.radiusFor(50) + 100, y: 0 });
+    // Inside the magnet radius but outside pickup range.
+    const far = w.spawnOrb({ x: w.radiusFor(50) + grazer.stats.magnetRadius * 0.6, y: 0 });
     const near = w.spawnOrb({ x: 1, y: 0 });
     const before = far.pos.x;
     eatingSystem(w, 1 / 60);

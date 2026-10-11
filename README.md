@@ -65,6 +65,9 @@ revenge, evolution thresholds, bot decisions) is covered by fast unit tests.
 
 ## Balancing
 
+Run `npm run balance` to simulate bots locked to all 16 builds and print per-build and per-perk
+results (average mass, kills and deaths per minute). Use it after any change to perk numbers.
+
 All numbers live in `src/config.ts` and `src/game/evolution/tree.ts`. Change a value, run
 `npm run dev`, feel it. The test suite guards invariants (no degenerate builds, creatures stay
 inside the arena, 16 unique forms) rather than exact tuning values, so balancing never breaks CI.

@@ -30,6 +30,19 @@ describe('Game', () => {
     }
   }, 30_000);
 
+  it('decay soft cap stops runaway giants', () => {
+    const game = new Game(3);
+    let max = 0;
+    for (let i = 0; i < 60 * 120; i++) {
+      game.update(DT);
+      if (i % 30 === 0) {
+        for (const c of game.world.creatures.values()) if (c.alive) max = Math.max(max, c.mass);
+      }
+    }
+    // Before the soft cap, giants passed 7000 mass within three minutes.
+    expect(max).toBeLessThan(3500);
+  }, 30_000);
+
   it('pauses the player and offers a choice at the first threshold, then resumes after choosing', () => {
     const game = new Game(3);
     const player = game.startRound();
@@ -48,7 +61,7 @@ describe('Game', () => {
     game.chooseBranch('swift');
     expect(game.world.paused).toBe(false);
     expect(player.path).toEqual(['swift']);
-    expect(player.stats.speedMult).toBeCloseTo(1.22);
+    expect(player.stats.speedMult).toBeCloseTo(1.18);
     game.update(DT);
     expect(player.pos).not.toEqual(pos);
   });

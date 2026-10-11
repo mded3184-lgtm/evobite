@@ -25,6 +25,11 @@ export default tseslint.config(
     },
   },
   {
+    // Dev scripts print reports to stdout.
+    files: ['scripts/**/*.ts'],
+    rules: { 'no-console': 'off' },
+  },
+  {
     files: ['*.config.js', '*.config.ts'],
     extends: [tseslint.configs.disableTypeChecked],
   },
