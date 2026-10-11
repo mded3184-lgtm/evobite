@@ -38,6 +38,10 @@ export interface Creature {
   invulnUntil: number;
   lastKillerId: number | null;
   revengeUntil: number;
+  /** Wants to boost this tick (player input or bot decision). */
+  boosting: boolean;
+  /** Burned mass waiting to be dropped as an orb. */
+  boostDropAcc: number;
   bot: BotBrain | null;
 }
 

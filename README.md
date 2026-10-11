@@ -12,7 +12,11 @@ No engine, no image assets: TypeScript + Canvas 2D, ~35 KB of JavaScript.
 ## Play
 
 - **Move**: mouse, or drag with one finger.
-- **Evolve**: click a card, or press `1` / `2`.
+- **Boost**: hold `Space`, or hold the BOOST button on touch screens. Costs mass; half of it
+  drops behind you as orbs.
+- **Pause**: `Esc` / `P`, or the pause button. The whole arena freezes.
+- **Sound**: `M`, or the speaker button. All sounds are synthesized, no audio files.
+- **Evolve**: click a card, or press `1` / `2`. The arena is frozen while you choose.
 - **Respawn**: click, `Space` or `Enter`.
 
 ## Why it should work on CrazyGames

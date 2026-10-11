@@ -96,6 +96,9 @@ export function botSystem(world: World, dt: number): void {
       brain.state = 'flee';
       brain.targetId = p.threat.id;
       steerAway(me, p.threat.pos);
+      // Panic boost when the predator is really close.
+      const panic = myR * 3 + world.radiusFor(p.threat.mass) * 1.5;
+      me.boosting = me.mass > CONFIG.boost.botMinMass && p.threatDistSq < panic * panic;
       continue;
     }
 
@@ -105,6 +108,10 @@ export function botSystem(world: World, dt: number): void {
       brain.targetId = p.prey.id;
       // Lead the target a little using its current direction.
       const lead = Math.sqrt(p.preyDistSq) * 0.25;
+      // Aggressive bots burst at prey that is almost in reach.
+      const lunge = myR * 2.5 + 60;
+      me.boosting =
+        me.mass > CONFIG.boost.botMinMass && brain.aggression > 0.7 && p.preyDistSq < lunge * lunge;
       steerToward(me, {
         x: p.prey.pos.x + p.prey.dir.x * lead,
         y: p.prey.pos.y + p.prey.dir.y * lead,
@@ -112,6 +119,7 @@ export function botSystem(world: World, dt: number): void {
       continue;
     }
 
+    me.boosting = false;
     if (p.orb) {
       brain.state = 'graze';
       brain.targetId = null;

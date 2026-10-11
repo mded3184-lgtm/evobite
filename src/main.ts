@@ -1,17 +1,22 @@
 import './style.css';
-import { GameLoop } from '@/core/loop';
+import { Sfx } from '@/audio/sfx';
 import { Input } from '@/core/input';
-import { Game } from '@/game/game';
+import { Keyboard } from '@/core/keyboard';
+import { GameLoop } from '@/core/loop';
+import { CONFIG } from '@/config';
 import { recordRound } from '@/game/economy';
 import type { Progress } from '@/game/economy';
 import { BRANCHES } from '@/game/evolution/tree';
+import { Game } from '@/game/game';
 import { Renderer } from '@/render/renderer';
 import { createPlatformSdk } from '@/sdk/crazygames';
 import { loadProgress, saveProgress } from '@/sdk/storage';
 import { must } from '@/ui/dom';
 import { EvolutionPicker } from '@/ui/evolutionPicker';
 import { Hud } from '@/ui/hud';
-import { DeathScreen, MenuScreen } from '@/ui/screens';
+import { DeathScreen, MenuScreen, PauseScreen } from '@/ui/screens';
+
+const MUTE_KEY = 'evobite.muted';
 
 async function boot(): Promise<void> {
   const sdk = createPlatformSdk();
@@ -23,24 +28,83 @@ async function boot(): Promise<void> {
   const game = new Game();
   const renderer = new Renderer(canvas, game);
   const input = new Input(canvas);
-  const hud = new Hud(overlay, game);
-  const picker = new EvolutionPicker(overlay);
+  const keyboard = new Keyboard();
+  const sfx = new Sfx(sdk.getItem(MUTE_KEY) === '1');
   let progress: Progress = loadProgress(sdk);
   const savedName = sdk.getItem('evobite.name') ?? '';
+
+  // ---- pause / sound ------------------------------------------------------
+
+  const toggleSound = (): void => {
+    sfx.unlock();
+    sfx.setMuted(!sfx.muted);
+    sdk.setItem(MUTE_KEY, sfx.muted ? '1' : '0');
+    hud.setSoundIcon(sfx.muted);
+    pauseScreen.setSound(sfx.muted);
+    sfx.click();
+  };
+
+  const setPaused = (paused: boolean): void => {
+    if (picker.isOpen) return; // the evolution picker is already a pause
+    const now = game.setPaused(paused);
+    if (now === pauseScreen.isOpen) return;
+    if (now) {
+      pauseScreen.show();
+      sfx.boost(false);
+      sdk.gameplayStop();
+    } else {
+      pauseScreen.hide();
+      sdk.gameplayStart();
+    }
+    sfx.click();
+  };
+
+  const hud = new Hud(overlay, game, {
+    onPause: () => {
+      setPaused(true);
+    },
+    onToggleSound: toggleSound,
+  });
+  const picker = new EvolutionPicker(overlay);
+
+  // ---- rounds -------------------------------------------------------------
 
   const startRound = (): void => {
     game.startRound();
     renderer.snapToPlayer();
     menu.hide();
     death.hide();
+    pauseScreen.hide();
     hud.show();
     sdk.gameplayStart();
   };
+
+  const toMenu = (): void => {
+    death.hide();
+    pauseScreen.hide();
+    picker.close();
+    hud.hide();
+    sfx.boost(false);
+    if (game.phase === 'playing') sdk.gameplayStop();
+    game.setPaused(false);
+    game.phase = 'menu';
+    menu.show(progress);
+  };
+
+  const pauseScreen = new PauseScreen(overlay, {
+    onResume: () => {
+      setPaused(false);
+    },
+    onToggleSound: toggleSound,
+    onQuit: toMenu,
+  });
 
   const menu = new MenuScreen(
     overlay,
     {
       onPlay: (name) => {
+        sfx.unlock();
+        sfx.click();
         game.playerName = name;
         sdk.setItem('evobite.name', name);
         startRound();
@@ -50,20 +114,35 @@ async function boot(): Promise<void> {
   );
   const death = new DeathScreen(overlay, {
     onRespawn: () => {
-      void sdk.showMidgameAd().then(startRound);
+      sfx.unlock();
+      sfx.suspend();
+      void sdk.showMidgameAd().then(() => {
+        sfx.resume();
+        startRound();
+      });
     },
-    onMenu: () => {
-      death.hide();
-      hud.hide();
-      game.phase = 'menu';
-      menu.show(progress);
-    },
+    onMenu: toMenu,
   });
 
+  hud.setSoundIcon(sfx.muted);
+  pauseScreen.setSound(sfx.muted);
+
+  keyboard.onPress(['Escape', 'KeyP'], () => {
+    if (game.phase === 'playing') setPaused(!game.isPaused);
+  });
+  keyboard.onPress(['KeyM'], toggleSound);
+
+  // ---- game events -> UI + sound -----------------------------------------
+
+  game.world.events.on('orbEaten', ({ eater }) => {
+    if (eater.kind === 'player') sfx.orb();
+  });
   game.world.events.on('evolutionOffer', ({ creature, tier }) => {
+    sfx.offer();
     picker.open(tier, creature.path, (id) => {
       game.chooseBranch(id);
       hud.announce(`Evolved: ${BRANCHES[id].name}`, 'good');
+      sfx.evolve();
       sdk.happyTime();
     });
   });
@@ -73,25 +152,40 @@ async function boot(): Promise<void> {
       revenge ? `REVENGE on ${prey.name}!` : `Ate ${prey.name}`,
       revenge ? 'good' : 'info',
     );
-    if (revenge) sdk.happyTime();
+    if (revenge) {
+      sfx.revenge();
+      sdk.happyTime();
+    } else {
+      sfx.chomp();
+    }
   });
   game.world.events.on('playerDied', ({ killer, stats }) => {
     picker.close();
     hud.hide();
+    sfx.death();
     sdk.gameplayStop();
     progress = recordRound(progress, stats, Game.completedFormKey(stats));
     saveProgress(sdk, progress);
     death.show(stats, killer.name, progress);
   });
 
+  // ---- loop ---------------------------------------------------------------
+
   const loop = new GameLoop({
     update: (dt) => {
-      if (game.phase === 'playing' && !picker.isOpen) {
-        game.aimAt(renderer.screenToWorld(input.aimPoint));
-      }
+      const live = game.phase === 'playing' && !game.isChoosing && !game.isPaused;
+      if (live) game.aimAt(renderer.screenToWorld(input.aimPoint));
+      game.setBoost(live && (keyboard.isHeld('Space') || hud.boostHeld));
+
       game.update(dt);
-      // Freeze camera drift and particles too while the world is paused for a choice.
-      renderer.update(game.isChoosing ? 0 : dt);
+
+      const boosting = game.playerBoosting;
+      sfx.boost(boosting);
+      const p = game.player;
+      hud.setBoostState(boosting, p !== null && p.mass > CONFIG.boost.minMass);
+
+      // Freeze camera drift and particles too while the world is frozen.
+      renderer.update(game.isChoosing || game.isPaused ? 0 : dt);
       hud.update(dt);
     },
     render: () => {
@@ -107,10 +201,16 @@ async function boot(): Promise<void> {
     (window as unknown as { evobite: Game }).evobite = game;
   }
 
-  // Pause the simulation when the tab is hidden so the player doesn't die off-screen.
+  // Leaving the tab opens the pause menu, so coming back never drops you into danger.
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) loop.stop();
-    else loop.start();
+    if (document.hidden) {
+      if (game.phase === 'playing') setPaused(true);
+      sfx.suspend();
+      loop.stop();
+    } else {
+      sfx.resume();
+      loop.start();
+    }
   });
 }
 

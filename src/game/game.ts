@@ -3,6 +3,7 @@ import { normalize, sub } from '@/core/vec';
 import type { Vec2 } from '@/core/vec';
 import type { BranchId } from './evolution/tree';
 import { formKey, TIER_COUNT } from './evolution/tree';
+import { boostSystem } from './systems/boost';
 import { botSystem } from './systems/bots';
 import { decaySystem } from './systems/decay';
 import { eatingSystem } from './systems/eating';
@@ -24,6 +25,7 @@ export class Game {
   phase: GamePhase = 'menu';
   playerName = 'you';
   private revengeKills = 0;
+  private userPaused = false;
   private lastRound: RoundStats | null = null;
 
   constructor(seed?: number) {
@@ -65,6 +67,7 @@ export class Game {
     }
     this.world.playerId = player.id;
     this.world.paused = false;
+    this.userPaused = false;
     this.revengeKills = 0;
     this.phase = 'playing';
     return player;
@@ -91,10 +94,33 @@ export class Game {
   }
 
   update(dt: number): void {
-    // Single-player arena: while the player is choosing an evolution, the whole world freezes,
-    // so nobody can sneak up and eat them mid-decision.
-    if (this.isChoosing) return;
+    // Single-player arena: while the player is choosing an evolution or has paused,
+    // the whole world freezes, so nobody can sneak up and eat them.
+    if (this.isChoosing || this.isPaused) return;
     this.stepWorld(dt);
+  }
+
+  /** Player-requested pause. Only meaningful during a live round. */
+  get isPaused(): boolean {
+    return this.userPaused && this.phase === 'playing';
+  }
+
+  /** Returns the new paused state. Ignored outside a live round. */
+  setPaused(paused: boolean): boolean {
+    this.userPaused = paused && this.phase === 'playing';
+    if (this.userPaused) this.setBoost(false);
+    return this.userPaused;
+  }
+
+  setBoost(on: boolean): void {
+    const p = this.world.player;
+    if (p) p.boosting = on && p.alive && !this.isChoosing && !this.userPaused;
+  }
+
+  /** True when the player is boosting and actually burning mass. */
+  get playerBoosting(): boolean {
+    const p = this.world.player;
+    return p !== null && p.alive && this.world.isBoosting(p);
   }
 
   /** True while the player has an evolution offer open and the world is frozen. */
@@ -116,6 +142,7 @@ export class Game {
     this.world.time += dt;
     botSystem(this.world, dt);
     movementSystem(this.world, dt);
+    boostSystem(this.world, dt);
     eatingSystem(this.world, dt);
     decaySystem(this.world, dt);
     spawnerSystem(this.world);

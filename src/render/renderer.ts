@@ -217,6 +217,24 @@ export class Renderer {
         relation === 'threat' ? 'rgba(255,70,90,0.9)' : `hsl(${String(c.hue)} 90% 60%)`;
     }
 
+    // Boost afterimages: fading copies of the body trailing behind.
+    if (world.isBoosting(c)) {
+      for (let i = 3; i >= 1; i--) {
+        ctx.globalAlpha = 0.12 * (4 - i);
+        ctx.fillStyle = body;
+        ctx.beginPath();
+        ctx.arc(
+          p.x - c.dir.x * r * 0.55 * i,
+          p.y - c.dir.y * r * 0.55 * i,
+          r * (1 - i * 0.12),
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
     // Swift fins: two trailing triangles opposite the direction of travel.
     if (has('swift')) {
       const back = { x: -c.dir.x, y: -c.dir.y };

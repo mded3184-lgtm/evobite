@@ -5,6 +5,11 @@ import { nextThreshold } from '@/game/systems/evolution';
 import { buildChipsHtml } from './build';
 import { el, must } from './dom';
 
+export interface HudHandlers {
+  onPause: () => void;
+  onToggleSound: () => void;
+}
+
 /**
  * In-game overlay: mass, form, progress to next evolution, rank and the top-5 leaderboard.
  * Updated at ~10 Hz; DOM writes are cheap but not free, and nothing here needs 60 Hz.
@@ -19,12 +24,16 @@ export class Hud {
   private readonly board: HTMLElement;
   private readonly toast: HTMLElement;
   private readonly build: HTMLElement;
+  private readonly soundBtn: HTMLButtonElement;
+  private readonly boostBtn: HTMLButtonElement;
   private accumulator = 0;
   private toastTimer = 0;
+  private boostTouch = false;
 
   constructor(
     container: HTMLElement,
     private readonly game: Game,
+    handlers: HudHandlers,
   ) {
     this.root = el('div', 'hud hidden');
     this.root.innerHTML = `
@@ -39,6 +48,11 @@ export class Hud {
       </div>
       <div class="hud-toast"></div>
       <div class="hud-build"></div>
+      <div class="hud-controls">
+        <button class="hud-btn hud-pause" type="button" aria-label="Pause">❚❚</button>
+        <button class="hud-btn hud-sound" type="button" aria-label="Toggle sound">🔊</button>
+      </div>
+      <button class="hud-boost" type="button" aria-label="Boost">BOOST</button>
     `;
     container.appendChild(this.root);
     this.mass = must('.hud-mass-value', this.root);
@@ -49,6 +63,39 @@ export class Hud {
     this.board = must('.hud-board', this.root);
     this.build = must('.hud-build', this.root);
     this.toast = must('.hud-toast', this.root);
+    this.soundBtn = must<HTMLButtonElement>('.hud-sound', this.root);
+    this.boostBtn = must<HTMLButtonElement>('.hud-boost', this.root);
+    must<HTMLButtonElement>('.hud-pause', this.root).addEventListener('click', handlers.onPause);
+    this.soundBtn.addEventListener('click', handlers.onToggleSound);
+
+    // Hold-to-boost button for touch screens; a second finger keeps steering on the canvas.
+    const press = (e: PointerEvent): void => {
+      e.preventDefault();
+      this.boostTouch = true;
+      this.boostBtn.setPointerCapture(e.pointerId);
+    };
+    const release = (): void => {
+      this.boostTouch = false;
+    };
+    this.boostBtn.addEventListener('pointerdown', press);
+    this.boostBtn.addEventListener('pointerup', release);
+    this.boostBtn.addEventListener('pointercancel', release);
+    this.boostBtn.addEventListener('lostpointercapture', release);
+  }
+
+  /** True while the on-screen boost button is held. */
+  get boostHeld(): boolean {
+    return this.boostTouch;
+  }
+
+  setSoundIcon(muted: boolean): void {
+    this.soundBtn.textContent = muted ? '🔇' : '🔊';
+  }
+
+  /** Visual state for the boost button (pressed, or unavailable because mass is too low). */
+  setBoostState(active: boolean, available: boolean): void {
+    this.boostBtn.classList.toggle('active', active);
+    this.boostBtn.classList.toggle('disabled', !available);
   }
 
   show(): void {
@@ -58,6 +105,7 @@ export class Hud {
 
   hide(): void {
     this.root.classList.add('hidden');
+    this.boostTouch = false;
   }
 
   announce(text: string, kind: 'good' | 'bad' | 'info' = 'info'): void {

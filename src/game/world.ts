@@ -43,9 +43,15 @@ export class World {
     return CONFIG.creature.radiusBase * Math.sqrt(mass);
   }
 
+  /** True when the creature is boosting and still has mass to burn. */
+  isBoosting(c: Creature): boolean {
+    return c.boosting && c.mass > CONFIG.boost.minMass;
+  }
+
   speedFor(c: Creature): number {
     const base = CONFIG.creature.speedBase / Math.pow(c.mass, CONFIG.creature.speedExp);
-    return Math.max(CONFIG.creature.minSpeed, base) * c.stats.speedMult;
+    const boost = this.isBoosting(c) ? CONFIG.boost.speedMult : 1;
+    return Math.max(CONFIG.creature.minSpeed, base) * c.stats.speedMult * boost;
   }
 
   randomPointInArena(margin = 80): Vec2 {
@@ -74,6 +80,8 @@ export class World {
       invulnUntil: this.time + 2,
       lastKillerId: null,
       revengeUntil: 0,
+      boosting: false,
+      boostDropAcc: 0,
       bot:
         kind === 'bot'
           ? {
@@ -90,14 +98,14 @@ export class World {
     return c;
   }
 
-  spawnOrb(pos?: Vec2): Orb {
+  spawnOrb(pos?: Vec2, size?: { mass: number; radius: number; hue: number }): Orb {
     const big = this.rng.chance(CONFIG.orbs.bigChance);
     const orb: Orb = {
       id: this.nextId++,
       pos: pos ?? this.randomPointInArena(20),
-      mass: big ? CONFIG.orbs.bigMass : CONFIG.orbs.mass,
-      radius: big ? CONFIG.orbs.bigRadius : CONFIG.orbs.radius,
-      hue: this.rng.int(0, 359),
+      mass: size?.mass ?? (big ? CONFIG.orbs.bigMass : CONFIG.orbs.mass),
+      radius: size?.radius ?? (big ? CONFIG.orbs.bigRadius : CONFIG.orbs.radius),
+      hue: size?.hue ?? this.rng.int(0, 359),
       alive: true,
     };
     this.orbs.push(orb);

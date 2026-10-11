@@ -32,6 +32,13 @@ Bots pick branches too, biased by an aggression personality, so the arena contai
 - The strongest-looking combo (Swift+Venom+Hunter+Apex) is also the most fragile, and the
   tankiest (Bulk+Armor+Grazer+Titan) is slow; neither dominates.
 
+## Boost
+
+Hold to move 65% faster. It burns 3% of your mass per second (at least 1.2 per second) and
+stops at mass 16, so a hatchling can't burn itself away. Half of the burned mass drops behind
+you as small orbs in your colour: a chase leaves a trail others can feed on. Bots panic-boost
+away from a predator that is right on them, and aggressive bots lunge at prey in reach.
+
 ## Rules that keep the arena honest
 
 - **Eat ratio**: attacker needs `max(attacker.eatRatio, prey.beEatenRatio)` × prey mass, and the

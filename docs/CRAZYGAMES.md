@@ -26,7 +26,8 @@ Source: https://docs.crazygames.com/requirements/
 - [x] `happytime()` on evolution and revenge kills.
 - [x] Midgame ad requested on respawn, with `adError` treated as finished.
 - [x] Progress stored through the data module, falling back to `localStorage`.
-- [ ] Sound muted while an ad plays (add when audio lands).
+- [x] Sound muted while an ad plays, and when the tab is hidden.
+- [x] `gameplayStop()` / `gameplayStart()` on pause and resume.
 
 ## Basic Launch metrics to watch (2 weeks)
 

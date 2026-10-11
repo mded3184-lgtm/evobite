@@ -54,6 +54,22 @@ export const CONFIG = {
     eliteMassMin: 120,
     eliteMassMax: 380,
   },
+  boost: {
+    /** Speed multiplier while boosting. */
+    speedMult: 1.65,
+    /** Mass lost per second as a fraction of current mass... */
+    drainRate: 0.03,
+    /** ...but never less than this many mass points per second. */
+    minDrainPerSec: 1.2,
+    /** Boosting stops below this mass so a hatchling can't burn itself to nothing. */
+    minMass: 16,
+    /** Fraction of burned mass dropped behind as small orbs others can eat. */
+    dropFraction: 0.5,
+    dropOrbMass: 1.5,
+    dropOrbRadius: 5,
+    /** Bots only boost above this mass, so small bots don't waste themselves. */
+    botMinMass: 30,
+  },
   evolution: {
     /** Mass thresholds at which a branch choice is offered. */
     thresholds: [30, 80, 200, 480] as const,

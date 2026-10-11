@@ -526,3 +526,100 @@ body {
     min-height: 0;
   }
 }
+
+/* In-game controls */
+.hud-controls {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+.hud-btn {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(11, 16, 32, 0.65);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+.hud-btn:hover {
+  border-color: var(--accent);
+}
+
+/* Touch-only hold-to-boost button */
+.hud-boost {
+  display: none;
+  pointer-events: auto;
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 211, 77, 0.7);
+  background: rgba(255, 211, 77, 0.15);
+  color: var(--accent-2);
+  font: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 1px;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.hud-boost.active {
+  background: rgba(255, 211, 77, 0.45);
+  transform: scale(0.94);
+}
+.hud-boost.disabled {
+  opacity: 0.35;
+}
+@media (pointer: coarse) {
+  /* Boost sits above the build strip so the strip can use the full width. */
+  .hud-boost {
+    display: block;
+    bottom: 72px;
+  }
+}
+
+/* Pause */
+.pause-title {
+  margin: 0 0 18px;
+  font-size: 30px;
+}
+.pause-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Narrow screens: controls move to the top-right corner above the leaderboard,
+   and the build strip stays on one row between the screen edge and the boost button. */
+@media (max-width: 520px) {
+  .hud-controls {
+    left: auto;
+    right: 14px;
+    transform: none;
+  }
+  .hud-right {
+    top: 58px;
+  }
+  .hud-build {
+    right: 14px;
+    flex-wrap: nowrap;
+  }
+  .hud-build .chip {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 4px 6px;
+  }
+  .hud-build .chip b,
+  .hud-build .chip span {
+    white-space: nowrap;
+  }
+}

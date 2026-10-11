@@ -28,7 +28,7 @@ export class MenuScreen {
           <button class="btn btn-play" type="button">Play</button>
         </div>
         <div class="menu-stats"><span class="coins">0</span> coins · best <span class="best">0</span></div>
-        <p class="hint">Move: mouse or drag · Evolve: click a card or press 1 / 2</p>
+        <p class="hint">Move: mouse or drag · Boost: hold Space (costs mass) · Pause: Esc · Evolve: 1 / 2</p>
       </div>
     `;
     container.appendChild(this.root);
@@ -128,4 +128,52 @@ function escape(s: string): string {
         return '&#39;';
     }
   });
+}
+
+export interface PauseHandlers {
+  onResume: () => void;
+  onToggleSound: () => void;
+  onQuit: () => void;
+}
+
+/** Single-player pause menu. The world is fully frozen while it is open. */
+export class PauseScreen {
+  private readonly root: HTMLElement;
+  private readonly soundBtn: HTMLButtonElement;
+
+  constructor(container: HTMLElement, handlers: PauseHandlers) {
+    this.root = el('div', 'screen pause hidden');
+    this.root.innerHTML = `
+      <div class="panel">
+        <h2 class="pause-title">Paused</h2>
+        <div class="pause-buttons">
+          <button class="btn btn-resume" type="button">Resume</button>
+          <button class="btn btn-ghost btn-sound" type="button">Sound: on</button>
+          <button class="btn btn-ghost btn-quit" type="button">Quit to menu</button>
+        </div>
+        <p class="hint">Esc or P to resume</p>
+      </div>
+    `;
+    container.appendChild(this.root);
+    this.soundBtn = must<HTMLButtonElement>('.btn-sound', this.root);
+    must<HTMLButtonElement>('.btn-resume', this.root).addEventListener('click', handlers.onResume);
+    this.soundBtn.addEventListener('click', handlers.onToggleSound);
+    must<HTMLButtonElement>('.btn-quit', this.root).addEventListener('click', handlers.onQuit);
+  }
+
+  get isOpen(): boolean {
+    return !this.root.classList.contains('hidden');
+  }
+
+  setSound(muted: boolean): void {
+    this.soundBtn.textContent = `Sound: ${muted ? 'off' : 'on'}`;
+  }
+
+  show(): void {
+    this.root.classList.remove('hidden');
+  }
+
+  hide(): void {
+    this.root.classList.add('hidden');
+  }
 }
