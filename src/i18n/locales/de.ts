@@ -1,0 +1,124 @@
+import type { Messages } from './en';
+
+export const de: Messages = {
+  'lobby.tagline': 'Friss. Wachse. Alle 30 Sekunden wählst du, was du wirst.',
+  'lobby.nickname': 'Spielername',
+  'lobby.play': 'Spielen',
+  'lobby.skins': 'Skins',
+  'lobby.perks': 'Perks',
+  'lobby.language': 'Sprache',
+  'lobby.hint': 'Bewegen: Maus oder ziehen · Boost: Leertaste · Pause: Esc · Entwickeln: 1 / 2',
+  'stat.bestMass': 'Rekordmasse',
+  'stat.kills': 'Kills',
+  'stat.rounds': 'Runden',
+  'stat.forms': 'Formen',
+
+  'shop.title': 'Skins',
+  'shop.hint': 'Jede Runde bringt Münzen: Größe, Kills und Rache zahlen sich aus.',
+  'shop.equip': 'Anlegen',
+  'shop.equipped': 'Angelegt',
+
+  'perks.title': 'Perks',
+  'perks.intro':
+    'An jeder Massenschwelle pausiert das Spiel und du wählst einen von zwei Perks. Vier Wahlen ergeben eine von 16 Formen.',
+  'perks.tier': 'Evolution {n}',
+  'perks.atMass': 'bei Masse {mass}',
+  'perks.or': 'oder',
+  'perks.rule.base':
+    'Ohne Perks musst du {ratio} größer als ein Wesen sein, um es zu fressen, und erhältst {absorb} seiner Masse.',
+  'perks.rule.stack': 'Boni für Tempo, Futter und Aufnahme addieren sich.',
+  'perks.rule.best':
+    'Wie viel größer du zum Fressen oder Gefressenwerden sein musst, bestimmt dein bester Perk.',
+  'perks.rule.decay':
+    'Über Masse {mass} verlierst du langsam Masse, je größer, desto schneller. Boosten kostet ebenfalls Masse.',
+
+  'hud.mass': 'Masse',
+  'hud.evolveAt': 'Evolution bei {mass}',
+  'hud.fullyEvolved': 'Voll entwickelt',
+  'hud.rank': '#{rank} von {total}',
+  'hud.boost': 'BOOST',
+  'toast.evolved': 'Entwickelt: {name}',
+  'toast.ate': '{name} gefressen',
+  'toast.revenge': 'RACHE an {name}!',
+  'arena.revenge': 'RACHE',
+
+  'picker.paused': 'Spiel pausiert',
+  'picker.title': 'Evolution {n} / 4 — wähle deinen Weg',
+  'picker.build': 'Dein Build',
+  'chip.choosing': 'wird gewählt',
+  'chip.at': 'bei {mass}',
+
+  'death.eatenBy': 'Gefressen von {name}',
+  'death.maxMass': 'max. Masse',
+  'death.kills': 'Kills',
+  'death.survived': 'überlebt',
+  'death.coins': 'Münzen',
+  'death.revenge': 'Rache genommen ×{n}',
+  'death.respawn': 'Nochmal',
+  'death.menu': 'Menü',
+  'death.summary': '{coins} Münzen · Rekord {best}',
+  'death.skinNudge': 'Du kannst dir einen neuen Skin leisten! Menü → Skins',
+
+  'pause.title': 'Pause',
+  'pause.resume': 'Weiter',
+  'pause.soundOn': 'Ton: an',
+  'pause.soundOff': 'Ton: aus',
+  'pause.quit': 'Zum Menü',
+  'pause.hint': 'Esc oder P zum Fortsetzen',
+
+  'error.start': 'Start fehlgeschlagen. Bitte neu laden.',
+
+  'form.hatchling': 'Schlüpfling',
+
+  'branch.swift': 'Flink',
+  'branch.bulk': 'Wuchtig',
+  'branch.venom': 'Gift',
+  'branch.armor': 'Panzer',
+  'branch.hunter': 'Jäger',
+  'branch.grazer': 'Sammler',
+  'branch.apex': 'Raubtier',
+  'branch.titan': 'Titan',
+
+  'blurb.swift': 'Bewege dich {speed} schneller. Fang Beute, entkomme allem.',
+  'blurb.bulk': 'Orbs geben {food} mehr Masse, gefressene Wesen {absorb} mehr.',
+  'blurb.venom':
+    'Wer dich berührt, verliert pro Sekunde {rate} der kleineren Masse. Du bekommst die Hälfte.',
+  'blurb.armor':
+    'Gegner müssen {ratio} größer sein, um dich zu fressen. Gift wirkt {resist} schwächer.',
+  'blurb.hunter': 'Friss Wesen, die nur {ratio} kleiner sind, und nimm {absorb} mehr auf.',
+  'blurb.grazer': 'Zieh Orbs in der Nähe an. Hör nie auf zu wachsen.',
+  'blurb.apex': 'Friss alles, was {ratio} kleiner ist als du. Nimm {absorb} mehr auf.',
+  'blurb.titan':
+    'Verliere Masse {decay} langsamer. Gegner müssen {ratio} größer sein, um dich zu fressen.',
+
+  'short.swift': '+{speed} Tempo',
+  'short.bulk': '+{food} aus Orbs',
+  'short.venom': 'Gift bei Kontakt',
+  'short.armor': 'schwer zu fressen',
+  'short.hunter': 'frisst ab +{ratio}',
+  'short.grazer': 'zieht Orbs an',
+  'short.apex': 'frisst ab +{ratio}',
+  'short.titan': 'langsamer Verlust',
+
+  'tag.speed': '+Tempo',
+  'tag.slower': '−Tempo',
+  'tag.food': '+Futter',
+  'tag.absorb': '+Aufnahme',
+  'tag.drain': 'Gift bei Kontakt',
+  'tag.hardToEat': 'schwer zu fressen',
+  'tag.venomResist': 'giftresistent',
+  'tag.easierKills': 'leichtere Kills',
+  'tag.magnet': 'Orb-Magnet',
+  'tag.slowDecay': 'langsamer Verlust',
+
+  'skin.classic': 'Minze',
+  'skin.ocean': 'Ozean',
+  'skin.sunset': 'Abendrot',
+  'skin.toxic': 'Toxisch',
+  'skin.candy': 'Bonbon',
+  'skin.lava': 'Lava',
+  'skin.shadow': 'Schatten',
+  'skin.gold': 'Gold',
+  'skin.galaxy': 'Galaxie',
+  'skin.rainbow': 'Regenbogen',
+};

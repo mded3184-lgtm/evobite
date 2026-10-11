@@ -1,0 +1,123 @@
+import type { Messages } from './en';
+
+export const pl: Messages = {
+  'lobby.tagline': 'Jedz. Rośnij. Co 30 sekund wybierz, kim się staniesz.',
+  'lobby.nickname': 'nick',
+  'lobby.play': 'Graj',
+  'lobby.skins': 'Skórki',
+  'lobby.perks': 'Atuty',
+  'lobby.language': 'Język',
+  'lobby.hint': 'Ruch: mysz lub przeciąganie · Zryw: Spacja · Pauza: Esc · Ewolucja: 1 / 2',
+  'stat.bestMass': 'rekord masy',
+  'stat.kills': 'zabójstwa',
+  'stat.rounds': 'rundy',
+  'stat.forms': 'formy',
+
+  'shop.title': 'Skórki',
+  'shop.hint': 'Monety dostajesz co rundę: za rozmiar, zabójstwa i zemstę.',
+  'shop.equip': 'Załóż',
+  'shop.equipped': 'Założona',
+
+  'perks.title': 'Atuty',
+  'perks.intro':
+    'Na każdym progu masy gra się zatrzymuje, a ty wybierasz jeden z dwóch atutów. Cztery wybory dają jedną z 16 form.',
+  'perks.tier': 'Ewolucja {n}',
+  'perks.atMass': 'przy masie {mass}',
+  'perks.or': 'lub',
+  'perks.rule.base':
+    'Bez atutów musisz być o {ratio} większy od stworzenia, żeby je zjeść, i dostajesz {absorb} jego masy.',
+  'perks.rule.stack': 'Premie do szybkości, jedzenia i wchłaniania sumują się.',
+  'perks.rule.best':
+    'O tym, o ile większy musisz być, by jeść lub zostać zjedzonym, decyduje twój najlepszy atut.',
+  'perks.rule.decay':
+    'Powyżej masy {mass} powoli tracisz masę, tym szybciej, im jesteś większy. Zryw też kosztuje masę.',
+
+  'hud.mass': 'masa',
+  'hud.evolveAt': 'Ewolucja przy {mass}',
+  'hud.fullyEvolved': 'Pełna ewolucja',
+  'hud.rank': '#{rank} z {total}',
+  'hud.boost': 'ZRYW',
+  'toast.evolved': 'Ewolucja: {name}',
+  'toast.ate': 'Zjedzono {name}',
+  'toast.revenge': 'ZEMSTA na {name}!',
+  'arena.revenge': 'ZEMSTA',
+
+  'picker.paused': 'Gra wstrzymana',
+  'picker.title': 'Ewolucja {n} / 4 — wybierz swoją drogę',
+  'picker.build': 'Twój build',
+  'chip.choosing': 'wybierasz',
+  'chip.at': 'przy {mass}',
+
+  'death.eatenBy': 'Zjadł cię {name}',
+  'death.maxMass': 'maks. masa',
+  'death.kills': 'zabójstwa',
+  'death.survived': 'przetrwano',
+  'death.coins': 'monety',
+  'death.revenge': 'Zemsta dokonana ×{n}',
+  'death.respawn': 'Jeszcze raz',
+  'death.menu': 'Menu',
+  'death.summary': '{coins} monet · rekord {best}',
+  'death.skinNudge': 'Stać cię na nową skórkę! Menu → Skórki',
+
+  'pause.title': 'Pauza',
+  'pause.resume': 'Wznów',
+  'pause.soundOn': 'Dźwięk: wł.',
+  'pause.soundOff': 'Dźwięk: wył.',
+  'pause.quit': 'Wyjdź do menu',
+  'pause.hint': 'Esc lub P, aby wznowić',
+
+  'error.start': 'Nie udało się uruchomić. Odśwież stronę.',
+
+  'form.hatchling': 'Pisklę',
+
+  'branch.swift': 'Zwinny',
+  'branch.bulk': 'Masywny',
+  'branch.venom': 'Jad',
+  'branch.armor': 'Pancerz',
+  'branch.hunter': 'Łowca',
+  'branch.grazer': 'Zbieracz',
+  'branch.apex': 'Drapieżca',
+  'branch.titan': 'Tytan',
+
+  'blurb.swift': 'Poruszasz się o {speed} szybciej. Łap ofiary, uciekaj przed wszystkim.',
+  'blurb.bulk': 'Kule dają o {food} więcej masy, a zjedzone stworzenia o {absorb} więcej.',
+  'blurb.venom':
+    'Kto cię dotyka, traci co sekundę {rate} mniejszej z waszych mas. Połowa trafia do ciebie.',
+  'blurb.armor':
+    'Wróg musi być o {ratio} większy, żeby cię zjeść. Jad działa na ciebie o {resist} słabiej.',
+  'blurb.hunter': 'Jedz stworzenia mniejsze tylko o {ratio} i wchłaniaj o {absorb} więcej.',
+  'blurb.grazer': 'Przyciągasz pobliskie kule. Rośniesz bez przerwy.',
+  'blurb.apex': 'Jedz wszystko, co jest o {ratio} mniejsze od ciebie. Wchłaniaj o {absorb} więcej.',
+  'blurb.titan': 'Tracisz masę o {decay} wolniej. Wróg musi być o {ratio} większy, żeby cię zjeść.',
+
+  'short.swift': '+{speed} szybkości',
+  'short.bulk': '+{food} z kul',
+  'short.venom': 'jad przy dotyku',
+  'short.armor': 'trudny do zjedzenia',
+  'short.hunter': 'je przy +{ratio}',
+  'short.grazer': 'przyciąga kule',
+  'short.apex': 'je przy +{ratio}',
+  'short.titan': 'wolna utrata',
+
+  'tag.speed': '+szybkość',
+  'tag.slower': '−szybkość',
+  'tag.food': '+jedzenie',
+  'tag.absorb': '+wchłanianie',
+  'tag.drain': 'jad przy dotyku',
+  'tag.hardToEat': 'trudny do zjedzenia',
+  'tag.venomResist': 'odporność na jad',
+  'tag.easierKills': 'łatwiejsze zabójstwa',
+  'tag.magnet': 'magnes na kule',
+  'tag.slowDecay': 'wolna utrata',
+
+  'skin.classic': 'Mięta',
+  'skin.ocean': 'Ocean',
+  'skin.sunset': 'Zachód',
+  'skin.toxic': 'Toksyna',
+  'skin.candy': 'Cukierek',
+  'skin.lava': 'Lawa',
+  'skin.shadow': 'Cień',
+  'skin.gold': 'Złoto',
+  'skin.galaxy': 'Galaktyka',
+  'skin.rainbow': 'Tęcza',
+};

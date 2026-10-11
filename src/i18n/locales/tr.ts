@@ -1,0 +1,124 @@
+import type { Messages } from './en';
+
+export const tr: Messages = {
+  'lobby.tagline': 'Ye. Büyü. Her 30 saniyede ne olacağını sen seç.',
+  'lobby.nickname': 'takma ad',
+  'lobby.play': 'Oyna',
+  'lobby.skins': 'Görünümler',
+  'lobby.perks': 'Yetenekler',
+  'lobby.language': 'Dil',
+  'lobby.hint': 'Hareket: fare veya sürükle · Hızlan: Boşluk · Duraklat: Esc · Evrim: 1 / 2',
+  'stat.bestMass': 'rekor kütle',
+  'stat.kills': 'avlanan',
+  'stat.rounds': 'tur',
+  'stat.forms': 'form',
+
+  'shop.title': 'Görünümler',
+  'shop.hint': 'Her turda jeton kazanırsın: boyut, av ve intikam kazandırır.',
+  'shop.equip': 'Kuşan',
+  'shop.equipped': 'Kuşanıldı',
+
+  'perks.title': 'Yetenekler',
+  'perks.intro':
+    'Her kütle eşiğinde oyun durur ve iki yetenekten birini seçersin. Dört seçim 16 formdan birini oluşturur.',
+  'perks.tier': 'Evrim {n}',
+  'perks.atMass': 'kütle {mass}',
+  'perks.or': 'veya',
+  'perks.rule.base':
+    'Yetenek olmadan bir canlıyı yemek için ondan {ratio} büyük olmalısın ve kütlesinin {absorb} kadarını alırsın.',
+  'perks.rule.stack': 'Hız, yem ve emme bonusları toplanır.',
+  'perks.rule.best':
+    'Yemek ya da yenmek için ne kadar büyük olman gerektiğinde en iyi yeteneğin geçerlidir.',
+  'perks.rule.decay':
+    '{mass} kütlenin üstünde yavaşça kütle kaybedersin, büyüdükçe daha hızlı. Hızlanmak da kütleye mal olur.',
+
+  'hud.mass': 'kütle',
+  'hud.evolveAt': '{mass} kütlede evrim',
+  'hud.fullyEvolved': 'Tam evrim',
+  'hud.rank': '#{rank} / {total}',
+  'hud.boost': 'HIZLAN',
+  'toast.evolved': 'Evrim: {name}',
+  'toast.ate': '{name} yendi',
+  'toast.revenge': '{name} için İNTİKAM!',
+  'arena.revenge': 'İNTİKAM',
+
+  'picker.paused': 'Oyun duraklatıldı',
+  'picker.title': 'Evrim {n} / 4 — yolunu seç',
+  'picker.build': 'Senin yapın',
+  'chip.choosing': 'seçiliyor',
+  'chip.at': '{mass} kütlede',
+
+  'death.eatenBy': 'Seni {name} yedi',
+  'death.maxMass': 'maks. kütle',
+  'death.kills': 'avlanan',
+  'death.survived': 'hayatta kalma',
+  'death.coins': 'jeton',
+  'death.revenge': 'İntikam alındı ×{n}',
+  'death.respawn': 'Tekrar',
+  'death.menu': 'Menü',
+  'death.summary': '{coins} jeton · rekor {best}',
+  'death.skinNudge': 'Yeni bir görünüm alabilirsin! Menü → Görünümler',
+
+  'pause.title': 'Duraklatıldı',
+  'pause.resume': 'Devam et',
+  'pause.soundOn': 'Ses: açık',
+  'pause.soundOff': 'Ses: kapalı',
+  'pause.quit': 'Menüye dön',
+  'pause.hint': 'Devam için Esc veya P',
+
+  'error.start': 'Başlatılamadı. Lütfen sayfayı yenile.',
+
+  'form.hatchling': 'Yavru',
+
+  'branch.swift': 'Çevik',
+  'branch.bulk': 'İri',
+  'branch.venom': 'Zehir',
+  'branch.armor': 'Zırh',
+  'branch.hunter': 'Avcı',
+  'branch.grazer': 'Toplayıcı',
+  'branch.apex': 'Yırtıcı',
+  'branch.titan': 'Titan',
+
+  'blurb.swift': '{speed} daha hızlı hareket et. Avını yakala, her şeyden kaç.',
+  'blurb.bulk': 'Küreler {food}, yenen canlılar {absorb} daha fazla kütle verir.',
+  'blurb.venom':
+    'Sana dokunan, saniyede küçük kütlenin {rate} kadarını kaybeder. Yarısı sana geçer.',
+  'blurb.armor':
+    'Düşmanlar seni yemek için {ratio} büyük olmalı. Zehir sana {resist} daha az işler.',
+  'blurb.hunter': 'Senden sadece {ratio} küçük canlıları ye ve {absorb} daha fazla em.',
+  'blurb.grazer': 'Yakındaki küreleri kendine çek. Büyümeyi hiç bırakma.',
+  'blurb.apex': 'Senden {ratio} küçük her şeyi ye. {absorb} daha fazla em.',
+  'blurb.titan':
+    'Kütleyi {decay} daha yavaş kaybet. Düşmanlar seni yemek için {ratio} büyük olmalı.',
+
+  'short.swift': '+{speed} hız',
+  'short.bulk': '+{food} küreden',
+  'short.venom': 'dokununca zehirler',
+  'short.armor': 'yemesi zor',
+  'short.hunter': '+{ratio} ile yer',
+  'short.grazer': 'küre çeker',
+  'short.apex': '+{ratio} ile yer',
+  'short.titan': 'yavaş kayıp',
+
+  'tag.speed': '+hız',
+  'tag.slower': '−hız',
+  'tag.food': '+yem',
+  'tag.absorb': '+emme',
+  'tag.drain': 'dokunma zehri',
+  'tag.hardToEat': 'yemesi zor',
+  'tag.venomResist': 'zehre dayanıklı',
+  'tag.easierKills': 'kolay av',
+  'tag.magnet': 'küre mıknatısı',
+  'tag.slowDecay': 'yavaş kayıp',
+
+  'skin.classic': 'Nane',
+  'skin.ocean': 'Okyanus',
+  'skin.sunset': 'Gün batımı',
+  'skin.toxic': 'Toksik',
+  'skin.candy': 'Şeker',
+  'skin.lava': 'Lav',
+  'skin.shadow': 'Gölge',
+  'skin.gold': 'Altın',
+  'skin.galaxy': 'Galaksi',
+  'skin.rainbow': 'Gökkuşağı',
+};

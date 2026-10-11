@@ -6,8 +6,9 @@ import { GameLoop } from '@/core/loop';
 import { CONFIG } from '@/config';
 import { buySkin, recordRound, selectSkin } from '@/game/economy';
 import type { Progress } from '@/game/economy';
-import { BRANCHES } from '@/game/evolution/tree';
 import { Game } from '@/game/game';
+import { detectLanguage, isLangCode, setLanguage, t } from '@/i18n';
+import { branchName } from '@/i18n/gameText';
 import { Renderer } from '@/render/renderer';
 import { createPlatformSdk } from '@/sdk/crazygames';
 import { loadProgress, saveProgress } from '@/sdk/storage';
@@ -18,10 +19,12 @@ import { Lobby } from '@/ui/lobby';
 import { DeathScreen, PauseScreen } from '@/ui/screens';
 
 const MUTE_KEY = 'evobite.muted';
+const LANG_KEY = 'evobite.lang';
 
 async function boot(): Promise<void> {
   const sdk = createPlatformSdk();
   await sdk.init();
+  setLanguage(detectLanguage(sdk.getItem(LANG_KEY), navigator.languages));
 
   const canvas = must<HTMLCanvasElement>('#game');
   const overlay = must('#overlay');
@@ -139,6 +142,13 @@ async function boot(): Promise<void> {
         sfx.unlock();
         sfx.click();
       },
+      onLanguage: (code) => {
+        if (!isLangCode(code)) return;
+        sdk.setItem(LANG_KEY, code);
+        // Every screen is built once at boot, so a reload is the simplest correct re-render.
+        // Progress, name, skin and sound settings are already saved.
+        window.location.reload();
+      },
     },
     savedName,
   );
@@ -171,7 +181,7 @@ async function boot(): Promise<void> {
     sfx.offer();
     picker.open(tier, creature.path, (id) => {
       game.chooseBranch(id);
-      hud.announce(`Evolved: ${BRANCHES[id].name}`, 'good');
+      hud.announce(t('toast.evolved', { name: branchName(id) }), 'good');
       sfx.evolve();
       sdk.happyTime();
     });
@@ -179,7 +189,7 @@ async function boot(): Promise<void> {
   game.world.events.on('creatureEaten', ({ eater, prey, revenge }) => {
     if (eater.kind !== 'player') return;
     hud.announce(
-      revenge ? `REVENGE on ${prey.name}!` : `Ate ${prey.name}`,
+      revenge ? t('toast.revenge', { name: prey.name }) : t('toast.ate', { name: prey.name }),
       revenge ? 'good' : 'info',
     );
     if (revenge) {
@@ -246,5 +256,5 @@ async function boot(): Promise<void> {
 boot().catch((err: unknown) => {
   console.error('EvoBite failed to start', err);
   const overlay = document.getElementById('overlay');
-  if (overlay) overlay.textContent = 'Failed to start. Please reload.';
+  if (overlay) overlay.textContent = t('error.start');
 });

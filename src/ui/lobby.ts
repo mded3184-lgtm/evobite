@@ -1,6 +1,8 @@
 import type { Progress } from '@/game/economy';
 import { CONFIG } from '@/config';
-import { BRANCHES, TIER_COUNT, TIERS } from '@/game/evolution/tree';
+import { TIER_COUNT, TIERS } from '@/game/evolution/tree';
+import { getLanguage, LANGUAGES, t } from '@/i18n';
+import { baseRules, branchBlurb, branchName, branchTags, skinName } from '@/i18n/gameText';
 import type { Skin } from '@/game/skins';
 import { getSkin, SKINS } from '@/game/skins';
 import { drawCreatureArt } from '@/render/creatureArt';
@@ -12,6 +14,7 @@ export interface LobbyHandlers {
   onBuy: (skinId: string) => boolean;
   onSelect: (skinId: string) => void;
   onClick: () => void;
+  onLanguage: (code: string) => void;
 }
 
 const MAX_NAME = 14;
@@ -42,55 +45,65 @@ export class Lobby {
     private readonly handlers: LobbyHandlers,
     initialName: string,
   ) {
+    const rules = baseRules();
     this.root = el('div', 'screen lobby-screen');
     this.root.innerHTML = `
       <div class="lobby">
         <header class="lobby-top">
           <h1 class="logo">Evo<span>Bite</span></h1>
-          <div class="coin-pill" title="Coins"><span class="coin-icon"></span><b class="lobby-coins">0</b></div>
+          <div class="lobby-top-right">
+            <label class="lang-picker" title="${t('lobby.language')}">
+              <span class="lang-globe" aria-hidden="true">🌐</span>
+              <select class="lang-select" aria-label="${t('lobby.language')}">${LANGUAGES.map(
+                (l) =>
+                  `<option value="${l.code}"${l.code === getLanguage() ? ' selected' : ''}>${l.name}</option>`,
+              ).join('')}</select>
+            </label>
+            <div class="coin-pill"><span class="coin-icon"></span><b class="lobby-coins">0</b></div>
+          </div>
         </header>
         <div class="lobby-body">
           <section class="lobby-hero">
             <canvas class="hero-canvas"></canvas>
-            <div class="hero-skin">Mint</div>
+            <div class="hero-skin"></div>
             <div class="hero-buttons">
-              <button class="btn btn-ghost btn-skins" type="button">🎨 Skins</button>
-              <button class="btn btn-ghost btn-perks" type="button">📖 Perks</button>
+              <button class="btn btn-ghost btn-skins" type="button">🎨 ${t('lobby.skins')}</button>
+              <button class="btn btn-ghost btn-perks" type="button">📖 ${t('lobby.perks')}</button>
             </div>
           </section>
           <section class="lobby-side">
-            <p class="tagline">Eat. Grow. Every 30 seconds, choose what you become.</p>
-            <input class="name-input" maxlength="${String(MAX_NAME)}" placeholder="nickname" autocomplete="off" spellcheck="false" />
-            <button class="btn btn-play btn-big" type="button">Play</button>
+            <p class="tagline">${t('lobby.tagline')}</p>
+            <input class="name-input" maxlength="${String(MAX_NAME)}" placeholder="${t('lobby.nickname')}" autocomplete="off" spellcheck="false" />
+            <button class="btn btn-play btn-big" type="button">${t('lobby.play')}</button>
             <div class="lobby-stats"></div>
           </section>
         </div>
-        <p class="hint">Move: mouse or drag · Boost: hold Space · Pause: Esc · Evolve: 1 / 2</p>
+        <p class="hint">${t('lobby.hint')}</p>
       </div>
       <div class="shop perks hidden">
         <div class="panel shop-panel">
           <header class="shop-top">
-            <h2>Perks</h2>
+            <h2>${t('perks.title')}</h2>
             <button class="shop-close perks-close" type="button" aria-label="Close">✕</button>
           </header>
-          <p class="shop-hint">At each mass threshold the game pauses and you pick one of two perks. Four picks make one of 16 forms.</p>
+          <p class="shop-hint">${t('perks.intro')}</p>
           <div class="perks-list"></div>
           <ul class="perks-rules">
-            <li>Without perks you must be <b>${pct(CONFIG.creature.eatRatio - 1)}</b> bigger than a creature to eat it, and you gain <b>${pct(CONFIG.creature.absorbFraction)}</b> of its mass.</li>
-            <li>Speed, food and absorb bonuses <b>add up</b> across perks.</li>
-            <li>For "how much bigger to eat" and "how much bigger to be eaten", your <b>best</b> perk counts.</li>
-            <li>Above mass <b>${String(CONFIG.creature.decayStartMass)}</b> you slowly lose mass, faster the bigger you are. Boosting also costs mass.</li>
+            <li>${t('perks.rule.base', { ratio: `<b>${rules.ratio}</b>`, absorb: `<b>${rules.absorb}</b>` })}</li>
+            <li>${t('perks.rule.stack')}</li>
+            <li>${t('perks.rule.best')}</li>
+            <li>${t('perks.rule.decay', { mass: `<b>${String(rules.decayMass)}</b>` })}</li>
           </ul>
         </div>
       </div>
       <div class="shop shop-skins hidden">
         <div class="panel shop-panel">
           <header class="shop-top">
-            <h2>Skins</h2>
+            <h2>${t('shop.title')}</h2>
             <div class="coin-pill"><span class="coin-icon"></span><b class="shop-coins">0</b></div>
             <button class="shop-close" type="button" aria-label="Close">✕</button>
           </header>
-          <p class="shop-hint">Earn coins every round: size, kills and revenge all pay.</p>
+          <p class="shop-hint">${t('shop.hint')}</p>
           <div class="shop-grid"></div>
         </div>
       </div>
@@ -151,6 +164,10 @@ export class Lobby {
       this.mouse = { x: e.clientX, y: e.clientY };
     });
 
+    must<HTMLSelectElement>('.lang-select', this.root).addEventListener('change', (e) => {
+      handlers.onLanguage((e.target as HTMLSelectElement).value);
+    });
+
     this.buildGrid();
   }
 
@@ -178,12 +195,12 @@ export class Lobby {
     this.coins.textContent = String(progress.coins);
     this.shopCoins.textContent = String(progress.coins);
     const skin = getSkin(progress.selectedSkin);
-    this.heroName.textContent = skin?.name ?? '';
+    this.heroName.textContent = skin ? skinName(skin.id) : '';
     this.stats.innerHTML = [
-      stat(String(Math.floor(progress.bestMass)), 'best mass'),
-      stat(String(progress.totalKills), 'kills'),
-      stat(String(progress.rounds), 'rounds'),
-      stat(`${String(progress.formsUnlocked.length)}/${String(FORMS_TOTAL)}`, 'forms'),
+      stat(String(Math.floor(progress.bestMass)), t('stat.bestMass')),
+      stat(String(progress.totalKills), t('stat.kills')),
+      stat(String(progress.rounds), t('stat.rounds')),
+      stat(`${String(progress.formsUnlocked.length)}/${String(FORMS_TOTAL)}`, t('stat.forms')),
     ].join('');
     this.updateCards(progress);
   }
@@ -202,7 +219,7 @@ export class Lobby {
       card.dataset.skin = skin.id;
       const canvas = el('canvas', 'skin-canvas');
       this.cardCanvases.set(skin.id, canvas);
-      const name = el('div', 'skin-name', skin.name);
+      const name = el('div', 'skin-name', skinName(skin.id));
       const btn = el('button', 'btn skin-btn');
       btn.type = 'button';
       btn.addEventListener('click', () => {
@@ -236,9 +253,9 @@ export class Lobby {
       btn.disabled = equipped;
       btn.className = `btn skin-btn ${equipped ? 'btn-ghost' : owned ? 'btn-ghost' : affordable ? 'btn-buy' : 'btn-ghost'}`;
       btn.innerHTML = equipped
-        ? 'Equipped'
+        ? t('shop.equipped')
         : owned
-          ? 'Equip'
+          ? t('shop.equip')
           : `<span class="coin-icon"></span>${String(skin.price)}`;
     }
   }
@@ -289,22 +306,21 @@ function perksHtml(): string {
     const at = CONFIG.evolution.thresholds[tier] ?? 0;
     const cards = pair
       .map((id, side) => {
-        const b = BRANCHES[id];
         return `<div class="perk perk-${side === 0 ? 'a' : 'b'}">
-          <div class="perk-name">${b.name}</div>
-          <div class="perk-blurb">${b.blurb}</div>
-          <div class="card-tags">${b.tags.map((t) => `<span>${t}</span>`).join('')}</div>
+          <div class="perk-name">${branchName(id)}</div>
+          <div class="perk-blurb">${branchBlurb(id)}</div>
+          <div class="card-tags">${branchTags(id)
+            .map((tag) => `<span>${tag}</span>`)
+            .join('')}</div>
         </div>`;
       })
-      .join('<div class="perk-or">or</div>');
+      .join(`<div class="perk-or">${t('perks.or')}</div>`);
     return `<section class="perk-tier">
-      <div class="perk-tier-head"><b>Evolution ${String(tier + 1)}</b><span>at mass ${String(at)}</span></div>
+      <div class="perk-tier-head"><b>${t('perks.tier', { n: tier + 1 })}</b><span>${t('perks.atMass', { mass: at })}</span></div>
       <div class="perk-row">${cards}</div>
     </section>`;
   }).join('');
 }
-
-const pct = (v: number): string => `${String(Math.round(v * 100))}%`;
 
 function stat(value: string, label: string): string {
   return `<div><b>${value}</b><span>${label}</span></div>`;

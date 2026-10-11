@@ -18,6 +18,8 @@ No engine, no image assets: TypeScript + Canvas 2D, ~35 KB of JavaScript.
 - **Sound**: `M`, or the speaker button. All sounds are synthesized, no audio files.
 - **Evolve**: click a card, or press `1` / `2`. The arena is frozen while you choose.
 - **Skins**: buy them in the lobby with coins earned each round.
+- **Language**: picked from the browser automatically, changeable in the lobby. English,
+  Ukrainian, Spanish, Portuguese, French, German, Italian, Polish, Turkish, Russian, Indonesian.
 - **Respawn**: click, `Space` or `Enter`.
 
 ## Why it should work on CrazyGames
@@ -62,6 +64,14 @@ tests/                 vitest unit tests for all game logic (headless, no DOM)
 
 The simulation has no DOM or canvas dependency, so every rule (who can eat whom, venom,
 revenge, evolution thresholds, bot decisions) is covered by fast unit tests.
+
+## Translations
+
+Strings live in `src/i18n/locales/`. `en.ts` is the source of truth; every other locale is typed
+against it, so a missing key fails the build. Perk descriptions use placeholders such as
+`{speed}` that are filled from the live perk data, so rebalancing never requires editing
+translations. A test checks that every translation keeps exactly the English placeholders.
+To add a language: copy `en.ts`, translate the values, and register it in `src/i18n/index.ts`.
 
 ## Balancing
 

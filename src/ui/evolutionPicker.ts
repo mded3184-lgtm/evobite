@@ -1,5 +1,7 @@
 import type { BranchId } from '@/game/evolution/tree';
-import { BRANCHES, optionsForTier } from '@/game/evolution/tree';
+import { optionsForTier } from '@/game/evolution/tree';
+import { t } from '@/i18n';
+import { branchBlurb, branchName, branchTags } from '@/i18n/gameText';
 import { buildChipsHtml } from './build';
 import { el } from './dom';
 
@@ -27,15 +29,15 @@ export class EvolutionPicker {
     this.onPick = onPick;
     const [a, b] = optionsForTier(tier);
     this.root.innerHTML = '';
-    const paused = el('div', 'picker-paused', 'Game paused');
-    const title = el('div', 'picker-title', `Evolution ${String(tier + 1)} / 4 — choose your path`);
+    const paused = el('div', 'picker-paused', t('picker.paused'));
+    const title = el('div', 'picker-title', t('picker.title', { n: tier + 1 }));
     const row = el('div', 'picker-row');
     row.appendChild(this.card(a, '1'));
     row.appendChild(this.card(b, '2'));
     this.root.append(paused, title, row);
     if (path.length > 0) {
       const build = el('div', 'picker-build');
-      build.innerHTML = `<div class="picker-build-label">Your build</div><div class="chips">${buildChipsHtml(path, tier)}</div>`;
+      build.innerHTML = `<div class="picker-build-label">${t('picker.build')}</div><div class="chips">${buildChipsHtml(path, tier)}</div>`;
       this.root.append(build);
     }
     this.root.classList.remove('hidden');
@@ -51,14 +53,15 @@ export class EvolutionPicker {
   }
 
   private card(id: BranchId, key: string): HTMLButtonElement {
-    const b = BRANCHES[id];
     const btn = el('button', `card card-${id}`);
     btn.type = 'button';
     btn.innerHTML = `
       <div class="card-key">${key}</div>
-      <div class="card-name">${b.name}</div>
-      <div class="card-blurb">${b.blurb}</div>
-      <div class="card-tags">${b.tags.map((t) => `<span>${t}</span>`).join('')}</div>
+      <div class="card-name">${branchName(id)}</div>
+      <div class="card-blurb">${branchBlurb(id)}</div>
+      <div class="card-tags">${branchTags(id)
+        .map((tag) => `<span>${tag}</span>`)
+        .join('')}</div>
     `;
     btn.addEventListener('click', () => {
       const cb = this.onPick;

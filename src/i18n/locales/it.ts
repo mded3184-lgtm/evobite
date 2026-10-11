@@ -1,0 +1,124 @@
+import type { Messages } from './en';
+
+export const it: Messages = {
+  'lobby.tagline': 'Mangia. Cresci. Ogni 30 secondi scegli cosa diventare.',
+  'lobby.nickname': 'nickname',
+  'lobby.play': 'Gioca',
+  'lobby.skins': 'Skin',
+  'lobby.perks': 'Abilità',
+  'lobby.language': 'Lingua',
+  'lobby.hint': 'Muovi: mouse o trascina · Scatto: Spazio · Pausa: Esc · Evolvi: 1 / 2',
+  'stat.bestMass': 'massa record',
+  'stat.kills': 'uccisioni',
+  'stat.rounds': 'partite',
+  'stat.forms': 'forme',
+
+  'shop.title': 'Skin',
+  'shop.hint': 'Guadagni monete a ogni partita: dimensione, uccisioni e vendetta rendono.',
+  'shop.equip': 'Equipaggia',
+  'shop.equipped': 'Equipaggiata',
+
+  'perks.title': 'Abilità',
+  'perks.intro':
+    'A ogni soglia di massa il gioco va in pausa e scegli una di due abilità. Quattro scelte danno una delle 16 forme.',
+  'perks.tier': 'Evoluzione {n}',
+  'perks.atMass': 'a massa {mass}',
+  'perks.or': 'o',
+  'perks.rule.base':
+    'Senza abilità devi essere più grande del {ratio} per mangiare una creatura, e ottieni il {absorb} della sua massa.',
+  'perks.rule.stack': 'I bonus a velocità, cibo e assorbimento si sommano.',
+  'perks.rule.best':
+    'Per quanto devi essere più grande per mangiare o essere mangiato, conta la tua abilità migliore.',
+  'perks.rule.decay':
+    'Oltre massa {mass} perdi massa lentamente, più in fretta quanto più sei grande. Anche lo scatto costa massa.',
+
+  'hud.mass': 'massa',
+  'hud.evolveAt': 'Evolvi a {mass}',
+  'hud.fullyEvolved': 'Evoluzione completa',
+  'hud.rank': '#{rank} su {total}',
+  'hud.boost': 'SCATTO',
+  'toast.evolved': 'Evoluzione: {name}',
+  'toast.ate': 'Hai mangiato {name}',
+  'toast.revenge': 'VENDETTA su {name}!',
+  'arena.revenge': 'VENDETTA',
+
+  'picker.paused': 'Gioco in pausa',
+  'picker.title': 'Evoluzione {n} / 4 — scegli la tua strada',
+  'picker.build': 'La tua build',
+  'chip.choosing': 'in scelta',
+  'chip.at': 'a {mass}',
+
+  'death.eatenBy': 'Mangiato da {name}',
+  'death.maxMass': 'massa max',
+  'death.kills': 'uccisioni',
+  'death.survived': 'sopravvissuto',
+  'death.coins': 'monete',
+  'death.revenge': 'Vendetta compiuta ×{n}',
+  'death.respawn': 'Riprova',
+  'death.menu': 'Menu',
+  'death.summary': '{coins} monete · record {best}',
+  'death.skinNudge': 'Puoi comprare una nuova skin! Menu → Skin',
+
+  'pause.title': 'Pausa',
+  'pause.resume': 'Riprendi',
+  'pause.soundOn': 'Audio: sì',
+  'pause.soundOff': 'Audio: no',
+  'pause.quit': 'Esci al menu',
+  'pause.hint': 'Esc o P per riprendere',
+
+  'error.start': 'Avvio non riuscito. Ricarica la pagina.',
+
+  'form.hatchling': 'Cucciolo',
+
+  'branch.swift': 'Rapido',
+  'branch.bulk': 'Robusto',
+  'branch.venom': 'Veleno',
+  'branch.armor': 'Corazza',
+  'branch.hunter': 'Cacciatore',
+  'branch.grazer': 'Raccoglitore',
+  'branch.apex': 'Predatore',
+  'branch.titan': 'Titano',
+
+  'blurb.swift': 'Muoviti il {speed} più veloce. Prendi le prede, sfuggi a tutto.',
+  'blurb.bulk':
+    'Le sfere danno il {food} di massa in più, le creature mangiate il {absorb} in più.',
+  'blurb.venom': 'Chi ti tocca perde il {rate} della massa minore al secondo. Tu ne ottieni metà.',
+  'blurb.armor':
+    'I nemici devono essere più grandi del {ratio} per mangiarti. Il veleno ti colpisce il {resist} in meno.',
+  'blurb.hunter': 'Mangia creature più piccole solo del {ratio} e assorbi il {absorb} in più.',
+  'blurb.grazer': 'Attira le sfere vicine. Non smettere mai di crescere.',
+  'blurb.apex': 'Mangia tutto ciò che è più piccolo del {ratio}. Assorbi il {absorb} in più.',
+  'blurb.titan':
+    'Perdi massa il {decay} più lentamente. I nemici devono essere più grandi del {ratio} per mangiarti.',
+
+  'short.swift': '+{speed} velocità',
+  'short.bulk': '+{food} dalle sfere',
+  'short.venom': 'drena al tocco',
+  'short.armor': 'duro da mangiare',
+  'short.hunter': 'mangia a +{ratio}',
+  'short.grazer': 'attira sfere',
+  'short.apex': 'mangia a +{ratio}',
+  'short.titan': 'perde meno',
+
+  'tag.speed': '+velocità',
+  'tag.slower': '−velocità',
+  'tag.food': '+cibo',
+  'tag.absorb': '+assorbimento',
+  'tag.drain': 'veleno al tocco',
+  'tag.hardToEat': 'duro da mangiare',
+  'tag.venomResist': 'resiste al veleno',
+  'tag.easierKills': 'uccisioni facili',
+  'tag.magnet': 'calamita sfere',
+  'tag.slowDecay': 'perde meno massa',
+
+  'skin.classic': 'Menta',
+  'skin.ocean': 'Oceano',
+  'skin.sunset': 'Tramonto',
+  'skin.toxic': 'Tossico',
+  'skin.candy': 'Caramella',
+  'skin.lava': 'Lava',
+  'skin.shadow': 'Ombra',
+  'skin.gold': 'Oro',
+  'skin.galaxy': 'Galassia',
+  'skin.rainbow': 'Arcobaleno',
+};

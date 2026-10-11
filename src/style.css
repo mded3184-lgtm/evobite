@@ -996,3 +996,46 @@ body {
     flex-direction: column;
   }
 }
+
+/* Language picker */
+.lobby-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lang-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+}
+.lang-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  max-width: 130px;
+}
+.lang-select option {
+  background: #10162a;
+  color: var(--text);
+}
+@media (max-width: 640px) {
+  .lang-select {
+    max-width: 90px;
+  }
+  .lobby-top {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

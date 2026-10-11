@@ -1,0 +1,124 @@
+import type { Messages } from './en';
+
+export const id: Messages = {
+  'lobby.tagline': 'Makan. Tumbuh. Setiap 30 detik, pilih kamu jadi apa.',
+  'lobby.nickname': 'nama panggilan',
+  'lobby.play': 'Main',
+  'lobby.skins': 'Skin',
+  'lobby.perks': 'Kemampuan',
+  'lobby.language': 'Bahasa',
+  'lobby.hint': 'Gerak: mouse atau geser · Dorongan: Spasi · Jeda: Esc · Evolusi: 1 / 2',
+  'stat.bestMass': 'massa rekor',
+  'stat.kills': 'mangsa',
+  'stat.rounds': 'ronde',
+  'stat.forms': 'wujud',
+
+  'shop.title': 'Skin',
+  'shop.hint': 'Dapatkan koin tiap ronde: ukuran, mangsa, dan balas dendam semuanya dihitung.',
+  'shop.equip': 'Pakai',
+  'shop.equipped': 'Dipakai',
+
+  'perks.title': 'Kemampuan',
+  'perks.intro':
+    'Di setiap batas massa, game berhenti sejenak dan kamu memilih satu dari dua kemampuan. Empat pilihan membentuk satu dari 16 wujud.',
+  'perks.tier': 'Evolusi {n}',
+  'perks.atMass': 'pada massa {mass}',
+  'perks.or': 'atau',
+  'perks.rule.base':
+    'Tanpa kemampuan, kamu harus {ratio} lebih besar untuk memakan makhluk, dan mendapat {absorb} massanya.',
+  'perks.rule.stack': 'Bonus kecepatan, makanan, dan serapan saling bertambah.',
+  'perks.rule.best':
+    'Untuk seberapa besar kamu harus lebih besar agar bisa makan atau dimakan, kemampuan terbaikmu yang berlaku.',
+  'perks.rule.decay':
+    'Di atas massa {mass} massamu berkurang perlahan, makin cepat jika makin besar. Dorongan juga memakan massa.',
+
+  'hud.mass': 'massa',
+  'hud.evolveAt': 'Evolusi di {mass}',
+  'hud.fullyEvolved': 'Evolusi penuh',
+  'hud.rank': '#{rank} dari {total}',
+  'hud.boost': 'DORONG',
+  'toast.evolved': 'Evolusi: {name}',
+  'toast.ate': 'Memakan {name}',
+  'toast.revenge': 'BALAS DENDAM ke {name}!',
+  'arena.revenge': 'BALAS DENDAM',
+
+  'picker.paused': 'Game dijeda',
+  'picker.title': 'Evolusi {n} / 4 — pilih jalanmu',
+  'picker.build': 'Build kamu',
+  'chip.choosing': 'sedang dipilih',
+  'chip.at': 'di {mass}',
+
+  'death.eatenBy': 'Dimakan oleh {name}',
+  'death.maxMass': 'massa maks',
+  'death.kills': 'mangsa',
+  'death.survived': 'bertahan',
+  'death.coins': 'koin',
+  'death.revenge': 'Balas dendam tuntas ×{n}',
+  'death.respawn': 'Main lagi',
+  'death.menu': 'Menu',
+  'death.summary': '{coins} koin · rekor {best}',
+  'death.skinNudge': 'Kamu bisa beli skin baru! Menu → Skin',
+
+  'pause.title': 'Jeda',
+  'pause.resume': 'Lanjut',
+  'pause.soundOn': 'Suara: nyala',
+  'pause.soundOff': 'Suara: mati',
+  'pause.quit': 'Keluar ke menu',
+  'pause.hint': 'Esc atau P untuk lanjut',
+
+  'error.start': 'Gagal memulai. Muat ulang halaman.',
+
+  'form.hatchling': 'Anakan',
+
+  'branch.swift': 'Lincah',
+  'branch.bulk': 'Gempal',
+  'branch.venom': 'Racun',
+  'branch.armor': 'Zirah',
+  'branch.hunter': 'Pemburu',
+  'branch.grazer': 'Pengumpul',
+  'branch.apex': 'Predator',
+  'branch.titan': 'Titan',
+
+  'blurb.swift': 'Bergerak {speed} lebih cepat. Kejar mangsa, kabur dari apa pun.',
+  'blurb.bulk': 'Orb memberi {food} massa lebih, makhluk yang dimakan {absorb} lebih.',
+  'blurb.venom':
+    'Yang menyentuhmu kehilangan {rate} dari massa yang lebih kecil per detik. Kamu dapat setengahnya.',
+  'blurb.armor':
+    'Musuh harus {ratio} lebih besar untuk memakanmu. Racun {resist} lebih lemah padamu.',
+  'blurb.hunter': 'Makan makhluk yang hanya {ratio} lebih kecil dan serap {absorb} lebih banyak.',
+  'blurb.grazer': 'Tarik orb di dekatmu. Terus tumbuh tanpa henti.',
+  'blurb.apex': 'Makan apa pun yang {ratio} lebih kecil darimu. Serap {absorb} lebih banyak.',
+  'blurb.titan':
+    'Massa berkurang {decay} lebih lambat. Musuh harus {ratio} lebih besar untuk memakanmu.',
+
+  'short.swift': '+{speed} kecepatan',
+  'short.bulk': '+{food} dari orb',
+  'short.venom': 'racun sentuhan',
+  'short.armor': 'sulit dimakan',
+  'short.hunter': 'makan di +{ratio}',
+  'short.grazer': 'menarik orb',
+  'short.apex': 'makan di +{ratio}',
+  'short.titan': 'susut lambat',
+
+  'tag.speed': '+kecepatan',
+  'tag.slower': '−kecepatan',
+  'tag.food': '+makanan',
+  'tag.absorb': '+serapan',
+  'tag.drain': 'racun sentuhan',
+  'tag.hardToEat': 'sulit dimakan',
+  'tag.venomResist': 'tahan racun',
+  'tag.easierKills': 'mangsa lebih mudah',
+  'tag.magnet': 'magnet orb',
+  'tag.slowDecay': 'susut lambat',
+
+  'skin.classic': 'Mint',
+  'skin.ocean': 'Samudra',
+  'skin.sunset': 'Senja',
+  'skin.toxic': 'Toksik',
+  'skin.candy': 'Permen',
+  'skin.lava': 'Lava',
+  'skin.shadow': 'Bayangan',
+  'skin.gold': 'Emas',
+  'skin.galaxy': 'Galaksi',
+  'skin.rainbow': 'Pelangi',
+};

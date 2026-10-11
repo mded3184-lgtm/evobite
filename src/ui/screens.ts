@@ -1,7 +1,8 @@
 import type { Progress } from '@/game/economy';
 import { SKINS } from '@/game/skins';
+import { t } from '@/i18n';
+import { localFormName } from '@/i18n/gameText';
 import { coinsForRound } from '@/game/economy';
-import { formName } from '@/game/evolution/tree';
 import type { RoundStats } from '@/game/types';
 import { el, formatTime, must } from './dom';
 
@@ -32,23 +33,23 @@ export class DeathScreen {
     const coins = coinsForRound(stats);
     this.root.innerHTML = `
       <div class="panel">
-        <h2 class="death-title">Eaten by <span class="killer">${escape(killerName)}</span></h2>
-        <div class="death-form">${escape(formName(stats.path))}</div>
+        <h2 class="death-title">${t('death.eatenBy', { name: `<span class="killer">${escape(killerName)}</span>` })}</h2>
+        <div class="death-form">${escape(localFormName(stats.path))}</div>
         <div class="death-grid">
-          <div><b>${String(Math.floor(stats.maxMass))}</b><span>max mass</span></div>
-          <div><b>${String(stats.kills)}</b><span>kills</span></div>
-          <div><b>${formatTime(stats.survivedSec)}</b><span>survived</span></div>
-          <div><b>+${String(coins)}</b><span>coins</span></div>
+          <div><b>${String(Math.floor(stats.maxMass))}</b><span>${t('death.maxMass')}</span></div>
+          <div><b>${String(stats.kills)}</b><span>${t('death.kills')}</span></div>
+          <div><b>${formatTime(stats.survivedSec)}</b><span>${t('death.survived')}</span></div>
+          <div><b>+${String(coins)}</b><span>${t('death.coins')}</span></div>
         </div>
-        ${stats.revengeKills > 0 ? `<div class="death-revenge">Revenge served ×${String(stats.revengeKills)}</div>` : ''}
+        ${stats.revengeKills > 0 ? `<div class="death-revenge">${t('death.revenge', { n: stats.revengeKills })}</div>` : ''}
         <div class="menu-row">
-          <button class="btn btn-respawn" type="button">Respawn</button>
-          <button class="btn btn-ghost btn-menu" type="button">Menu</button>
+          <button class="btn btn-respawn" type="button">${t('death.respawn')}</button>
+          <button class="btn btn-ghost btn-menu" type="button">${t('death.menu')}</button>
         </div>
-        <div class="menu-stats">${String(progress.coins)} coins · best ${String(Math.floor(progress.bestMass))}</div>
+        <div class="menu-stats">${t('death.summary', { coins: progress.coins, best: Math.floor(progress.bestMass) })}</div>
         ${
           SKINS.some((k) => !progress.ownedSkins.includes(k.id) && progress.coins >= k.price)
-            ? '<div class="death-skin">🎨 You can afford a new skin! Open Menu → Skins</div>'
+            ? `<div class="death-skin">🎨 ${t('death.skinNudge')}</div>`
             : ''
         }
       </div>
@@ -98,13 +99,13 @@ export class PauseScreen {
     this.root = el('div', 'screen pause hidden');
     this.root.innerHTML = `
       <div class="panel">
-        <h2 class="pause-title">Paused</h2>
+        <h2 class="pause-title">${t('pause.title')}</h2>
         <div class="pause-buttons">
-          <button class="btn btn-resume" type="button">Resume</button>
-          <button class="btn btn-ghost btn-sound" type="button">Sound: on</button>
-          <button class="btn btn-ghost btn-quit" type="button">Quit to menu</button>
+          <button class="btn btn-resume" type="button">${t('pause.resume')}</button>
+          <button class="btn btn-ghost btn-sound" type="button">${t('pause.soundOn')}</button>
+          <button class="btn btn-ghost btn-quit" type="button">${t('pause.quit')}</button>
         </div>
-        <p class="hint">Esc or P to resume</p>
+        <p class="hint">${t('pause.hint')}</p>
       </div>
     `;
     container.appendChild(this.root);
@@ -119,7 +120,7 @@ export class PauseScreen {
   }
 
   setSound(muted: boolean): void {
-    this.soundBtn.textContent = `Sound: ${muted ? 'off' : 'on'}`;
+    this.soundBtn.textContent = t(muted ? 'pause.soundOff' : 'pause.soundOn');
   }
 
   show(): void {

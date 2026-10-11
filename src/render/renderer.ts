@@ -4,6 +4,7 @@ import type { Game } from '@/game/game';
 import type { Creature } from '@/game/types';
 import { canEat } from '@/game/systems/eating';
 import { getSkin } from '@/game/skins';
+import { t } from '@/i18n';
 import { Camera } from './camera';
 import { drawCreatureArt } from './creatureArt';
 import { Particles } from './particles';
@@ -236,7 +237,7 @@ export class Renderer {
       ctx.beginPath();
       ctx.arc(p.x, p.y, r + 10, 0, Math.PI * 2);
       ctx.stroke();
-      this.label(p.x, p.y - r - 26, 'REVENGE', '#ff4d6d', 13, true);
+      this.label(p.x, p.y - r - 26, t('arena.revenge'), '#ff4d6d', 13, true);
     }
 
     // Name + mass. Hide tiny far-away labels to reduce clutter.

@@ -1,6 +1,7 @@
 import { CONFIG } from '@/config';
 import type { Game } from '@/game/game';
-import { formName } from '@/game/evolution/tree';
+import { t } from '@/i18n';
+import { localFormName } from '@/i18n/gameText';
 import { nextThreshold } from '@/game/systems/evolution';
 import { buildChipsHtml } from './build';
 import { el, must } from './dom';
@@ -38,8 +39,8 @@ export class Hud {
     this.root = el('div', 'hud hidden');
     this.root.innerHTML = `
       <div class="hud-left">
-        <div class="hud-mass"><span class="hud-mass-value">0</span><span class="hud-mass-unit">mass</span></div>
-        <div class="hud-form">Hatchling</div>
+        <div class="hud-mass"><span class="hud-mass-value">0</span><span class="hud-mass-unit">${t('hud.mass')}</span></div>
+        <div class="hud-form">${t('form.hatchling')}</div>
         <div class="hud-bar"><div class="hud-bar-fill"></div><div class="hud-bar-label"></div></div>
       </div>
       <div class="hud-right">
@@ -52,7 +53,7 @@ export class Hud {
         <button class="hud-btn hud-pause" type="button" aria-label="Pause">❚❚</button>
         <button class="hud-btn hud-sound" type="button" aria-label="Toggle sound">🔊</button>
       </div>
-      <button class="hud-boost" type="button" aria-label="Boost">BOOST</button>
+      <button class="hud-boost" type="button" aria-label="Boost">${t('hud.boost')}</button>
     `;
     container.appendChild(this.root);
     this.mass = must('.hud-mass-value', this.root);
@@ -130,22 +131,25 @@ export class Hud {
     const p = world.player;
     if (!p) return;
     this.mass.textContent = String(Math.floor(p.mass));
-    this.form.textContent = formName(p.path);
+    this.form.textContent = localFormName(p.path);
     const buildHtml = buildChipsHtml(p.path);
     if (this.build.innerHTML !== buildHtml) this.build.innerHTML = buildHtml;
 
     const threshold = nextThreshold(p);
     if (threshold === null) {
       this.bar.style.width = '100%';
-      this.barLabel.textContent = 'Fully evolved';
+      this.barLabel.textContent = t('hud.fullyEvolved');
     } else {
       const prev = CONFIG.evolution.thresholds[p.path.length - 1] ?? 0;
-      const t = Math.max(0, Math.min(1, (p.mass - prev) / (threshold - prev)));
-      this.bar.style.width = `${String(Math.round(t * 100))}%`;
-      this.barLabel.textContent = `Evolve at ${String(threshold)}`;
+      const progress = Math.max(0, Math.min(1, (p.mass - prev) / (threshold - prev)));
+      this.bar.style.width = `${String(Math.round(progress * 100))}%`;
+      this.barLabel.textContent = t('hud.evolveAt', { mass: threshold });
     }
 
-    this.rank.textContent = `#${String(world.rankOf(p.id))} of ${String(world.creatures.size)}`;
+    this.rank.textContent = t('hud.rank', {
+      rank: world.rankOf(p.id),
+      total: world.creatures.size,
+    });
 
     const top = world.leaderboard(5);
     const html = top
