@@ -60,8 +60,8 @@ async function boot(): Promise<void> {
     },
   });
 
-  game.world.events.on('evolutionOffer', ({ tier }) => {
-    picker.open(tier, (id) => {
+  game.world.events.on('evolutionOffer', ({ creature, tier }) => {
+    picker.open(tier, creature.path, (id) => {
       game.chooseBranch(id);
       hud.announce(`Evolved: ${BRANCHES[id].name}`, 'good');
       sdk.happyTime();
@@ -90,7 +90,8 @@ async function boot(): Promise<void> {
         game.aimAt(renderer.screenToWorld(input.aimPoint));
       }
       game.update(dt);
-      renderer.update(dt);
+      // Freeze camera drift and particles too while the world is paused for a choice.
+      renderer.update(game.isChoosing ? 0 : dt);
       hud.update(dt);
     },
     render: () => {
@@ -100,6 +101,11 @@ async function boot(): Promise<void> {
 
   menu.show(progress);
   loop.start();
+
+  // Dev-only handle for debugging and browser smoke tests; stripped from production builds.
+  if (import.meta.env.DEV) {
+    (window as unknown as { evobite: Game }).evobite = game;
+  }
 
   // Pause the simulation when the tab is hidden so the player doesn't die off-screen.
   document.addEventListener('visibilitychange', () => {

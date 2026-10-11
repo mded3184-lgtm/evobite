@@ -407,6 +407,83 @@ body {
   color: #9dd4ff;
 }
 
+/* Build strip */
+.hud-build {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: calc(100% - 28px);
+}
+.chip {
+  display: flex;
+  flex-direction: column;
+  min-width: 78px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(11, 16, 32, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  line-height: 1.2;
+}
+.chip b {
+  font-size: 13px;
+}
+.chip span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.chip-swift b,
+.chip-venom b,
+.chip-hunter b,
+.chip-apex b {
+  color: #ff9aa8;
+}
+.chip-bulk b,
+.chip-armor b,
+.chip-grazer b,
+.chip-titan b {
+  color: #9dd4ff;
+}
+.chip-locked {
+  opacity: 0.45;
+  border-style: dashed;
+}
+.chip-now {
+  border-color: var(--accent);
+}
+.chip-now b,
+.chip-now span {
+  color: var(--accent);
+}
+.chip-locked b {
+  color: var(--muted);
+}
+
+.picker-paused {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.picker-build {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.picker-build-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.picker-build .chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 @keyframes pop {
   from {
     transform: scale(0.85);

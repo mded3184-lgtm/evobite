@@ -91,12 +91,15 @@ export class Game {
   }
 
   update(dt: number): void {
-    if (this.phase === 'menu') {
-      this.stepWorld(dt);
-      return;
-    }
+    // Single-player arena: while the player is choosing an evolution, the whole world freezes,
+    // so nobody can sneak up and eat them mid-decision.
+    if (this.isChoosing) return;
     this.stepWorld(dt);
-    evolutionSystem(this.world);
+  }
+
+  /** True while the player has an evolution offer open and the world is frozen. */
+  get isChoosing(): boolean {
+    return this.phase === 'playing' && this.world.paused;
   }
 
   /** Revenge target if still alive and inside the window. */

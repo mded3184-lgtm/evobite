@@ -2,6 +2,7 @@ import { CONFIG } from '@/config';
 import type { Game } from '@/game/game';
 import { formName } from '@/game/evolution/tree';
 import { nextThreshold } from '@/game/systems/evolution';
+import { buildChipsHtml } from './build';
 import { el, must } from './dom';
 
 /**
@@ -17,6 +18,7 @@ export class Hud {
   private readonly rank: HTMLElement;
   private readonly board: HTMLElement;
   private readonly toast: HTMLElement;
+  private readonly build: HTMLElement;
   private accumulator = 0;
   private toastTimer = 0;
 
@@ -36,6 +38,7 @@ export class Hud {
         <ol class="hud-board"></ol>
       </div>
       <div class="hud-toast"></div>
+      <div class="hud-build"></div>
     `;
     container.appendChild(this.root);
     this.mass = must('.hud-mass-value', this.root);
@@ -44,6 +47,7 @@ export class Hud {
     this.barLabel = must('.hud-bar-label', this.root);
     this.rank = must('.hud-rank', this.root);
     this.board = must('.hud-board', this.root);
+    this.build = must('.hud-build', this.root);
     this.toast = must('.hud-toast', this.root);
   }
 
@@ -79,6 +83,8 @@ export class Hud {
     if (!p) return;
     this.mass.textContent = String(Math.floor(p.mass));
     this.form.textContent = formName(p.path);
+    const buildHtml = buildChipsHtml(p.path);
+    if (this.build.innerHTML !== buildHtml) this.build.innerHTML = buildHtml;
 
     const threshold = nextThreshold(p);
     if (threshold === null) {

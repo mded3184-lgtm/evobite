@@ -53,6 +53,27 @@ describe('Game', () => {
     expect(player.pos).not.toEqual(pos);
   });
 
+  it('freezes the whole world, not just the player, while an evolution is being chosen', () => {
+    const game = new Game(7);
+    const player = game.startRound();
+    player.mass = CONFIG.evolution.thresholds[0];
+    game.update(DT);
+    expect(game.isChoosing).toBe(true);
+
+    const snapshot = [...game.world.creatures.values()].map((c) => ({ ...c.pos, mass: c.mass }));
+    const time = game.world.time;
+    for (let i = 0; i < 120; i++) game.update(DT);
+    expect(game.world.time).toBe(time);
+    expect([...game.world.creatures.values()].map((c) => ({ ...c.pos, mass: c.mass }))).toEqual(
+      snapshot,
+    );
+
+    game.chooseBranch('bulk');
+    expect(game.isChoosing).toBe(false);
+    game.update(DT);
+    expect(game.world.time).toBeGreaterThan(time);
+  });
+
   it('rejects an invalid branch for the current tier', () => {
     const game = new Game(4);
     const player = game.startRound();

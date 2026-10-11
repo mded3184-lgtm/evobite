@@ -1,5 +1,6 @@
 import type { BranchId } from '@/game/evolution/tree';
 import { BRANCHES, optionsForTier } from '@/game/evolution/tree';
+import { buildChipsHtml } from './build';
 import { el } from './dom';
 
 /**
@@ -22,15 +23,21 @@ export class EvolutionPicker {
     });
   }
 
-  open(tier: number, onPick: (id: BranchId) => void): void {
+  open(tier: number, path: readonly BranchId[], onPick: (id: BranchId) => void): void {
     this.onPick = onPick;
     const [a, b] = optionsForTier(tier);
     this.root.innerHTML = '';
+    const paused = el('div', 'picker-paused', 'Game paused');
     const title = el('div', 'picker-title', `Evolution ${String(tier + 1)} / 4 — choose your path`);
     const row = el('div', 'picker-row');
     row.appendChild(this.card(a, '1'));
     row.appendChild(this.card(b, '2'));
-    this.root.append(title, row);
+    this.root.append(paused, title, row);
+    if (path.length > 0) {
+      const build = el('div', 'picker-build');
+      build.innerHTML = `<div class="picker-build-label">Your build</div><div class="chips">${buildChipsHtml(path, tier)}</div>`;
+      this.root.append(build);
+    }
     this.root.classList.remove('hidden');
   }
 
