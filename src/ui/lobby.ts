@@ -1,5 +1,6 @@
 import type { Progress } from '@/game/economy';
-import { TIER_COUNT } from '@/game/evolution/tree';
+import { CONFIG } from '@/config';
+import { BRANCHES, TIER_COUNT, TIERS } from '@/game/evolution/tree';
 import type { Skin } from '@/game/skins';
 import { getSkin, SKINS } from '@/game/skins';
 import { drawCreatureArt } from '@/render/creatureArt';
@@ -29,6 +30,7 @@ export class Lobby {
   private readonly heroCanvas: HTMLCanvasElement;
   private readonly heroName: HTMLElement;
   private readonly shop: HTMLElement;
+  private readonly perks: HTMLElement;
   private readonly grid: HTMLElement;
   private readonly cardCanvases = new Map<string, HTMLCanvasElement>();
   private progress: Progress | null = null;
@@ -51,7 +53,10 @@ export class Lobby {
           <section class="lobby-hero">
             <canvas class="hero-canvas"></canvas>
             <div class="hero-skin">Mint</div>
-            <button class="btn btn-ghost btn-skins" type="button">🎨 Skins</button>
+            <div class="hero-buttons">
+              <button class="btn btn-ghost btn-skins" type="button">🎨 Skins</button>
+              <button class="btn btn-ghost btn-perks" type="button">📖 Perks</button>
+            </div>
           </section>
           <section class="lobby-side">
             <p class="tagline">Eat. Grow. Every 30 seconds, choose what you become.</p>
@@ -62,7 +67,23 @@ export class Lobby {
         </div>
         <p class="hint">Move: mouse or drag · Boost: hold Space · Pause: Esc · Evolve: 1 / 2</p>
       </div>
-      <div class="shop hidden">
+      <div class="shop perks hidden">
+        <div class="panel shop-panel">
+          <header class="shop-top">
+            <h2>Perks</h2>
+            <button class="shop-close perks-close" type="button" aria-label="Close">✕</button>
+          </header>
+          <p class="shop-hint">At each mass threshold the game pauses and you pick one of two perks. Four picks make one of 16 forms.</p>
+          <div class="perks-list"></div>
+          <ul class="perks-rules">
+            <li>Without perks you must be <b>${pct(CONFIG.creature.eatRatio - 1)}</b> bigger than a creature to eat it, and you gain <b>${pct(CONFIG.creature.absorbFraction)}</b> of its mass.</li>
+            <li>Speed, food and absorb bonuses <b>add up</b> across perks.</li>
+            <li>For "how much bigger to eat" and "how much bigger to be eaten", your <b>best</b> perk counts.</li>
+            <li>Above mass <b>${String(CONFIG.creature.decayStartMass)}</b> you slowly lose mass, faster the bigger you are. Boosting also costs mass.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="shop shop-skins hidden">
         <div class="panel shop-panel">
           <header class="shop-top">
             <h2>Skins</h2>
@@ -83,7 +104,20 @@ export class Lobby {
     this.stats = must('.lobby-stats', this.root);
     this.heroCanvas = must<HTMLCanvasElement>('.hero-canvas', this.root);
     this.heroName = must('.hero-skin', this.root);
-    this.shop = must('.shop', this.root);
+    this.shop = must('.shop-skins', this.root);
+    this.perks = must('.perks', this.root);
+    must('.perks-list', this.root).innerHTML = perksHtml();
+    must<HTMLButtonElement>('.btn-perks', this.root).addEventListener('click', () => {
+      handlers.onClick();
+      this.perks.classList.remove('hidden');
+    });
+    must<HTMLButtonElement>('.perks-close', this.root).addEventListener('click', () => {
+      handlers.onClick();
+      this.perks.classList.add('hidden');
+    });
+    this.perks.addEventListener('click', (e) => {
+      if (e.target === this.perks) this.perks.classList.add('hidden');
+    });
     this.grid = must('.shop-grid', this.root);
 
     const play = (): void => {
@@ -109,7 +143,9 @@ export class Lobby {
       if (e.target === this.shop) this.closeShop();
     });
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !this.shop.classList.contains('hidden')) this.closeShop();
+      if (e.key !== 'Escape') return;
+      this.closeShop();
+      this.perks.classList.add('hidden');
     });
     this.root.addEventListener('pointermove', (e) => {
       this.mouse = { x: e.clientX, y: e.clientY };
@@ -132,6 +168,7 @@ export class Lobby {
   hide(): void {
     this.root.classList.add('hidden');
     this.closeShop();
+    this.perks.classList.add('hidden');
     cancelAnimationFrame(this.rafId);
   }
 
@@ -245,6 +282,29 @@ function flash(node: HTMLElement, cls: string): void {
     { once: true },
   );
 }
+
+/** Perk summary built from the live game data, so it never drifts from the real numbers. */
+function perksHtml(): string {
+  return TIERS.map((pair, tier) => {
+    const at = CONFIG.evolution.thresholds[tier] ?? 0;
+    const cards = pair
+      .map((id, side) => {
+        const b = BRANCHES[id];
+        return `<div class="perk perk-${side === 0 ? 'a' : 'b'}">
+          <div class="perk-name">${b.name}</div>
+          <div class="perk-blurb">${b.blurb}</div>
+          <div class="card-tags">${b.tags.map((t) => `<span>${t}</span>`).join('')}</div>
+        </div>`;
+      })
+      .join('<div class="perk-or">or</div>');
+    return `<section class="perk-tier">
+      <div class="perk-tier-head"><b>Evolution ${String(tier + 1)}</b><span>at mass ${String(at)}</span></div>
+      <div class="perk-row">${cards}</div>
+    </section>`;
+  }).join('');
+}
+
+const pct = (v: number): string => `${String(Math.round(v * 100))}%`;
 
 function stat(value: string, label: string): string {
   return `<div><b>${value}</b><span>${label}</span></div>`;

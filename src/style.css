@@ -924,3 +924,75 @@ body {
     gap: 8px;
   }
 }
+
+/* ---------- Perk summary ---------- */
+.hero-buttons {
+  display: flex;
+  gap: 8px;
+}
+.perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.perk-tier-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.perk-tier-head span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.perk-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.perk {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.perk-name {
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+.perk-a .perk-name {
+  color: #ff9aa8;
+}
+.perk-b .perk-name {
+  color: #9dd4ff;
+}
+.perk-blurb {
+  font-size: 13px;
+  color: #c9d1e3;
+}
+.perk-or {
+  align-self: center;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.perks-rules {
+  margin: 16px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.perks-rules b {
+  color: var(--text);
+}
+@media (max-width: 640px) {
+  .perk-row {
+    flex-direction: column;
+  }
+  .hero-buttons {
+    flex-direction: column;
+  }
+}
