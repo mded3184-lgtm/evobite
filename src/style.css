@@ -1437,90 +1437,372 @@ select {
   }
 }
 
-/* ---------- Narrow screens ---------- */
+/* ---------- Phones ----------
+   Goals: the whole lobby fits on one screen without scrolling on any phone (down to the
+   320x568 iPhone SE, and in landscape), and the in-game HUD leaves the arena visible.
+   Heights use dvh so the browser's own toolbars are accounted for. */
 
-@media (max-width: 760px) {
+/* Touch: no double-tap zoom, no long-press callouts or text selection on game UI. */
+html,
+body,
+button,
+.tile,
+.card,
+.hud-boost {
+  touch-action: manipulation;
+}
+body {
+  -webkit-touch-callout: none;
+}
+
+/* The lobby scrolls only as a last resort, and never clips its top (safe centering). */
+.lobby-screen {
+  justify-content: flex-start;
+}
+
+/* Portrait phones and narrow windows: one column, everything sized from the viewport.
+   (Short landscape screens get their own two-column layout below.) */
+@media (max-width: 760px) and (min-height: 501px) {
+  .lobby-screen {
+    padding: max(10px, env(safe-area-inset-top)) 14px max(10px, env(safe-area-inset-bottom));
+  }
+  .lobby {
+    min-height: calc(100dvh - 20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0;
+  }
+  .lobby-top {
+    margin-bottom: 0;
+  }
   .lobby-body {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: clamp(6px, 1.4dvh, 12px);
   }
+  /* Let the right column's children join the grid so the logo can sit above the hero. */
   .lobby-side {
-    /* Let the right column's children join the grid so the logo can sit above the hero. */
     display: contents;
   }
   .logo3d {
     order: 1;
-    font-size: 60px;
+    margin: 8px 0 0;
+    font-size: clamp(40px, 8dvh, 62px);
     text-align: center;
     transform: rotate(-2deg);
     transform-origin: center;
-    margin-top: 4px;
   }
-  .tagline {
-    order: 3;
-    text-align: center;
-    font-size: 15px;
+  .logo3d span {
+    -webkit-text-stroke-width: 8px;
   }
   .lobby-hero {
     order: 2;
   }
   .stage {
-    width: min(200px, 52vw);
+    width: clamp(110px, 24dvh, 210px);
+  }
+  .skin-switch {
+    margin-top: -10px;
+    gap: 8px;
   }
   .hero-skin {
-    min-width: 120px;
-    font-size: 16px;
-    padding: 6px 14px;
+    min-width: 110px;
+    font-size: 15px;
+    padding: 5px 12px;
   }
-  .lobby-stats {
-    order: 7;
+  .round-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .tagline {
+    order: 3;
+    margin: 0;
+    text-align: center;
+    font-size: 14px;
   }
   .name-field {
     order: 4;
+    height: clamp(42px, 6.5dvh, 52px);
+  }
+  .name-input {
+    font-size: 17px; /* >= 16px so iOS doesn't zoom into the field */
   }
   .btn-big {
     order: 5;
+    height: clamp(52px, 8.5dvh, 68px);
+    font-size: clamp(22px, 3.6dvh, 28px);
+  }
+  .btn-big .icon {
+    width: 1em;
+    height: 1em;
   }
   .tile-row {
     order: 6;
+    gap: 10px;
   }
-  .skin-switch {
-    margin-top: -14px;
+  .tile {
+    height: clamp(44px, 7dvh, 56px);
+    font-size: 16px;
+    padding: 0 10px;
+    gap: 10px;
+  }
+  .tile-icon {
+    width: 32px;
+    height: 32px;
+  }
+  /* Stats become one compact row: icon + number, small label underneath. */
+  .lobby-stats {
+    order: 7;
+    gap: 6px;
+  }
+  .stat {
+    padding: 6px 4px;
+    gap: 3px;
+  }
+  .stat-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+  }
+  .stat-icon .icon {
+    width: 14px;
+    height: 14px;
+  }
+  .stat b {
+    font-size: 15px;
+  }
+  .stat span {
+    font-size: 9px;
+    letter-spacing: 0.2px;
   }
   .lobby .hint {
     display: none;
   }
 }
 
-@media (max-width: 520px) {
-  .panel {
-    padding: 22px 16px;
+/* Short portrait screens (iPhone SE, small Androids, browsers with big toolbars). */
+@media (max-width: 760px) and (min-height: 501px) and (max-height: 700px) {
+  .tagline {
+    display: none;
   }
-  .death-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .chip-btn {
+    height: 38px;
   }
-  .hud-bar {
-    width: 150px;
-  }
-  .hud-mass-value {
-    font-size: 30px;
-  }
-  .picker-row {
-    flex-direction: column;
-  }
-  .card-blurb {
-    min-height: 0;
+  .chip-btn.icon-only {
+    width: 38px;
   }
   .coin-counter {
+    height: 38px;
+    font-size: 18px;
+  }
+  .coin-icon.big {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Landscape phones: two columns, hero left, controls right, no tagline or hint. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .lobby-screen {
+    padding: 8px max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left));
+  }
+  .lobby {
+    min-height: calc(100dvh - 16px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: min(900px, 100%);
+    padding: 0;
+  }
+  .lobby-top {
+    margin-bottom: 4px;
+  }
+  .lobby-body {
+    /* minmax(0, ...) lets both columns shrink below their content on tiny screens. */
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 14px;
+  }
+  .stage {
+    width: min(52dvh, 38vw);
+  }
+  .skin-switch {
+    margin-top: -12px;
+  }
+  .hero-skin {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 15px;
+    padding: 5px 12px;
+  }
+  .round-btn {
+    width: 32px;
+    height: 32px;
+    flex: none;
+  }
+  .lobby-stats {
+    gap: 5px;
+  }
+  .lobby-side {
+    gap: 8px;
+  }
+  .logo3d {
+    margin: 0;
+    font-size: clamp(34px, 11dvh, 56px);
+  }
+  .logo3d span {
+    -webkit-text-stroke-width: 7px;
+  }
+  .tagline,
+  .lobby .hint {
+    display: none;
+  }
+  .name-field {
+    height: 40px;
+  }
+  .btn-big {
+    height: clamp(46px, 14dvh, 62px);
+    font-size: clamp(20px, 6dvh, 26px);
+  }
+  .tile {
     height: 42px;
+    font-size: 15px;
+  }
+  .tile-icon {
+    width: 28px;
+    height: 28px;
+  }
+  .stat {
+    padding: 5px 4px;
+    gap: 2px;
+  }
+  .stat-icon {
+    display: none;
+  }
+  .stat b {
+    font-size: 15px;
+  }
+  .stat span {
+    font-size: 9px;
+  }
+  .chip-btn,
+  .chip-btn.icon-only {
+    height: 36px;
+  }
+  .chip-btn.icon-only {
+    width: 36px;
+  }
+  .coin-counter {
+    height: 36px;
+    font-size: 17px;
+  }
+}
+
+/* ---------- Phones: in-game HUD, picker and panels ---------- */
+
+@media (max-width: 520px), (max-height: 500px) {
+  .panel {
+    padding: 20px 16px;
+  }
+  .hud-left {
+    left: 10px;
+    top: 8px;
+  }
+  .hud-right {
+    right: 10px;
+  }
+  .hud-mass-value {
+    font-size: 26px;
+    -webkit-text-stroke-width: 4px;
+  }
+  .hud-form {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .hud-bar {
+    width: 132px;
+    height: 16px;
+  }
+  .hud-bar-label {
+    font-size: 9.5px;
+    line-height: 12px;
+  }
+  .hud-rank {
+    font-size: 13px;
+  }
+  /* Top 3 only: the full top 5 covered too much of a small screen. */
+  .hud-board {
+    min-width: 128px;
+    padding: 6px 10px;
+  }
+  .hud-board li {
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .hud-board li:nth-child(n + 4) {
+    display: none;
+  }
+  .hud-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+  .hud-toast {
+    font-size: 14px;
+    top: 22%;
+  }
+  .chip {
+    padding: 4px 8px;
+  }
+  .chip b {
+    font-size: 12px;
+  }
+  .chip span {
+    font-size: 10px;
+  }
+  .hud-boost {
+    width: 76px;
+    height: 76px;
+    font-size: 12px;
+  }
+
+  /* The picker covers the HUD fully so its title never overlaps the leaderboard. */
+  .picker {
+    background: rgba(6, 9, 20, 0.9);
+    gap: 10px;
+  }
+  .picker-title {
     font-size: 19px;
   }
-  .lang-select {
-    max-width: 96px;
+  .card {
+    padding: 14px 14px 12px;
+  }
+  .card-name {
+    font-size: 21px;
+    margin-bottom: 4px;
+  }
+  .card-blurb {
+    font-size: 14px;
+    min-height: 0;
+  }
+  .card-tags {
+    margin-top: 8px;
+  }
+  .death-title {
+    font-size: 23px;
+  }
+  .death-grid b {
+    font-size: 20px;
+  }
+  .pause-title {
+    font-size: 28px;
+    margin-bottom: 14px;
   }
   .shop-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 10px;
+  }
+  .shop-top h2 {
+    font-size: 24px;
   }
   .perk-row {
     flex-direction: column;
@@ -1529,23 +1811,34 @@ select {
     align-self: flex-start;
     padding-left: 6px;
   }
-  .btn-big {
-    height: 66px;
-    font-size: 26px;
+  .lang-select {
+    max-width: 104px;
   }
+}
 
-  /* HUD: controls move to the top-right corner above the leaderboard, build strip spans
-     the full width under the boost button. */
+/* Portrait phones: HUD controls go top-right above the leaderboard; build strip spans the
+   bottom under the boost button; cards stack. */
+@media (max-width: 520px) {
+  .death-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .picker-row {
+    flex-direction: column;
+    gap: 10px;
+  }
   .hud-controls {
     left: auto;
-    right: 14px;
+    right: 10px;
+    top: 8px;
     transform: none;
   }
   .hud-right {
-    top: 62px;
+    top: 52px;
   }
   .hud-build {
-    right: 14px;
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
     flex-wrap: nowrap;
   }
   .hud-build .chip {
@@ -1556,5 +1849,38 @@ select {
   .hud-build .chip b,
   .hud-build .chip span {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+@media (pointer: coarse) and (max-width: 520px) {
+  .hud-boost {
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 56px);
+    right: 12px;
+  }
+}
+
+/* Landscape phones in game: short screen, keep everything tight to the edges. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hud-boost {
+    bottom: 14px;
+    right: max(14px, env(safe-area-inset-right));
+  }
+  .hud-build {
+    bottom: 8px;
+    max-width: calc(100% - 140px);
+  }
+  .picker-title {
+    font-size: 17px;
+  }
+  .picker-paused,
+  .picker-build {
+    display: none;
+  }
+  .card-blurb {
+    font-size: 13px;
+  }
+  .shop-panel {
+    max-height: calc(100dvh - 16px);
   }
 }

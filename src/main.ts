@@ -252,6 +252,11 @@ async function boot(): Promise<void> {
     Object.assign(window, { evobite: game, evobiteRenderer: renderer });
   }
 
+  // iOS Safari ignores user-scalable=no; block pinch-zoom gestures so the game never zooms.
+  document.addEventListener('gesturestart', (e) => {
+    e.preventDefault();
+  });
+
   // Leaving the tab opens the pause menu, so coming back never drops you into danger.
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
