@@ -1193,12 +1193,6 @@ select {
 .hud-boost.disabled {
   filter: grayscale(0.8) brightness(0.7);
 }
-@media (pointer: coarse) {
-  .hud-boost {
-    display: block;
-    bottom: 72px;
-  }
-}
 
 /* ---------- Evolution picker ---------- */
 
@@ -1759,11 +1753,6 @@ body {
   .chip span {
     font-size: 10px;
   }
-  .hud-boost {
-    width: 76px;
-    height: 76px;
-    font-size: 12px;
-  }
 
   /* The picker covers the HUD fully so its title never overlaps the leaderboard. */
   .picker {
@@ -1853,23 +1842,9 @@ body {
     text-overflow: ellipsis;
   }
 }
-@media (pointer: coarse) and (max-width: 520px) {
-  .hud-boost {
-    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 56px);
-    right: 12px;
-  }
-}
 
 /* Landscape phones in game: short screen, keep everything tight to the edges. */
 @media (max-height: 500px) and (orientation: landscape) {
-  .hud-boost {
-    bottom: 14px;
-    right: max(14px, env(safe-area-inset-right));
-  }
-  .hud-build {
-    bottom: 8px;
-    max-width: calc(100% - 140px);
-  }
   .picker-title {
     font-size: 17px;
   }
@@ -1885,83 +1860,251 @@ body {
   }
 }
 
-/* ---------- Touch joystick ---------- */
+/* ---------- Touch controls and phone HUD ----------
+   One sizing system for every phone control. --ctl is the joystick base diameter; the boost
+   button is centred on the same horizontal line as the joystick, and the build strip sits
+   below both (portrait) or between them (landscape), so nothing overlaps. */
+
+:root {
+  --ctl: 120px;
+  --knob: 52px;
+  --boost: 80px;
+  --edge: max(14px, env(safe-area-inset-left));
+  --edge-r: max(14px, env(safe-area-inset-right));
+  --strip: 46px; /* build strip height incl. its bottom margin */
+  --ctl-bottom: calc(max(8px, env(safe-area-inset-bottom)) + var(--strip) + 10px);
+}
 
 .joystick {
   position: absolute;
-  width: 128px;
-  height: 128px;
-  margin: -64px 0 0 -64px; /* left/top point at the centre */
+  left: var(--edge);
+  bottom: var(--ctl-bottom);
+  width: var(--ctl);
+  height: var(--ctl);
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(circle, rgba(10, 15, 31, 0.15) 0 55%, rgba(10, 15, 31, 0.45) 100%);
-  border: 3px solid rgba(255, 255, 255, 0.22);
-  box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.04);
-  transition: opacity 0.15s ease;
-}
-/* Resting position: a faint hint in the bottom-left corner. */
-.joystick.idle {
-  left: calc(max(16px, env(safe-area-inset-left)) + 64px);
-  top: calc(100% - 64px - 92px);
-  opacity: 0.45;
+  background: radial-gradient(circle, rgba(10, 15, 31, 0.2) 0 55%, rgba(10, 15, 31, 0.5) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 9px rgba(255, 255, 255, 0.04);
+  opacity: 0.6;
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease;
 }
 .joystick.held {
   opacity: 1;
-  border-color: rgba(53, 224, 161, 0.55);
+  border-color: rgba(53, 224, 161, 0.6);
 }
 .joystick-knob {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 56px;
-  height: 56px;
-  margin: -28px 0 0 -28px;
+  width: var(--knob);
+  height: var(--knob);
+  margin: calc(var(--knob) / -2) 0 0 calc(var(--knob) / -2);
   border-radius: 50%;
   background: radial-gradient(circle at 50% 35%, #7ff5c8, var(--mint) 60%, #1fb27c);
   box-shadow:
     inset 0 3px 0 rgba(255, 255, 255, 0.5),
-    0 5px 0 var(--mint-dark),
-    0 10px 18px rgba(0, 0, 0, 0.35);
-}
-.joystick.held .joystick-knob {
-  box-shadow:
-    inset 0 3px 0 rgba(255, 255, 255, 0.5),
-    0 2px 0 var(--mint-dark),
-    0 6px 12px rgba(0, 0, 0, 0.35);
-}
-@media (max-height: 500px) and (orientation: landscape) {
-  .joystick.idle {
-    top: calc(100% - 64px - 56px);
-  }
+    0 4px 0 var(--mint-dark),
+    0 8px 16px rgba(0, 0, 0, 0.35);
 }
 
-/* Boost button: bolt icon above the label. */
 .hud-boost {
   display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
+  width: var(--boost);
+  height: var(--boost);
+  right: var(--edge-r);
+  /* Same centre line as the joystick. */
+  bottom: calc(var(--ctl-bottom) + (var(--ctl) - var(--boost)) / 2);
 }
 .hud-boost .icon {
-  width: 30px;
-  height: 30px;
+  width: calc(var(--boost) * 0.34);
+  height: calc(var(--boost) * 0.34);
 }
 .hud-boost span {
-  font-size: 11px;
-  letter-spacing: 0.8px;
+  font-size: calc(var(--boost) * 0.13);
+  letter-spacing: 0.6px;
 }
 @media (pointer: coarse) {
   .hud-boost {
     display: flex;
   }
 }
-@media (max-width: 520px), (max-height: 500px) {
-  .hud-boost .icon {
-    width: 26px;
-    height: 26px;
+
+/* Portrait phones */
+@media (max-width: 520px) {
+  :root {
+    --ctl: 112px;
+    --knob: 48px;
+    --boost: 76px;
+    --strip: 44px;
   }
-  .hud-boost span {
-    font-size: 10px;
+  .hud-left {
+    left: 12px;
+    top: 10px;
+  }
+  .hud-mass-value {
+    font-size: 24px;
+  }
+  .hud-mass-unit {
+    font-size: 11px;
+  }
+  .hud-form {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .hud-bar {
+    width: 118px;
+    height: 14px;
+    border-width: 1.5px;
+  }
+  .hud-bar-label {
+    font-size: 8.5px;
+    line-height: 11px;
+  }
+  .hud-controls {
+    right: 12px;
+    top: 10px;
+    gap: 6px;
+  }
+  .hud-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  .hud-btn .icon {
+    width: 16px;
+    height: 16px;
+  }
+  .hud-right {
+    right: 12px;
+    top: 52px;
+  }
+  .hud-rank {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+  .hud-board {
+    min-width: 0;
+    width: 124px;
+    padding: 5px 8px;
+    border-width: 1.5px;
+  }
+  .hud-board li {
+    font-size: 11px;
+    line-height: 16px;
+    gap: 4px;
+  }
+  .hud-board .n {
+    width: 14px;
+  }
+  .hud-build {
+    left: 12px;
+    right: 12px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    gap: 5px;
+  }
+  .hud-build .chip {
+    padding: 3px 6px;
+    border-width: 1.5px;
+  }
+  .hud-build .chip b {
+    font-size: 11px;
+  }
+  .hud-build .chip span {
+    font-size: 9px;
+  }
+  .hud-toast {
+    font-size: 13px;
+    padding: 7px 14px;
+  }
+}
+
+/* Very narrow phones (iPhone SE / small Androids) */
+@media (max-width: 360px) {
+  :root {
+    --ctl: 104px;
+    --knob: 44px;
+    --boost: 70px;
+  }
+  .hud-board {
+    width: 112px;
+  }
+}
+
+/* Landscape phones: controls in the two bottom corners, build strip between them. */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --ctl: 108px;
+    --knob: 46px;
+    --boost: 72px;
+    --strip: 0px;
+    --ctl-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .hud-left {
+    left: var(--edge);
+    top: 8px;
+  }
+  .hud-mass-value {
+    font-size: 22px;
+  }
+  .hud-form {
+    font-size: 12px;
+  }
+  .hud-bar {
+    width: 118px;
+    height: 14px;
+  }
+  .hud-bar-label {
+    font-size: 8.5px;
+    line-height: 11px;
+  }
+  .hud-controls {
+    top: 8px;
+  }
+  .hud-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .hud-right {
+    right: var(--edge-r);
+    top: 8px;
+  }
+  .hud-rank {
+    font-size: 11px;
+  }
+  .hud-board {
+    min-width: 0;
+    width: 124px;
+    padding: 5px 8px;
+  }
+  .hud-board li {
+    font-size: 11px;
+    line-height: 16px;
+  }
+  .hud-build {
+    left: calc(var(--edge) + var(--ctl) + 14px);
+    right: calc(var(--edge-r) + var(--boost) + 14px);
+    max-width: none;
+    bottom: 10px;
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+  .hud-build .chip {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding: 3px 6px;
+  }
+  .hud-build .chip b {
+    font-size: 11px;
+  }
+  .hud-build .chip span {
+    font-size: 9px;
+    white-space: nowrap;
   }
 }
