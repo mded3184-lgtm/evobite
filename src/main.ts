@@ -1,3 +1,4 @@
+import '@fontsource-variable/nunito';
 import './style.css';
 import { Sfx } from '@/audio/sfx';
 import { Input } from '@/core/input';
@@ -53,6 +54,7 @@ async function boot(): Promise<void> {
     sdk.setItem(MUTE_KEY, sfx.muted ? '1' : '0');
     hud.setSoundIcon(sfx.muted);
     pauseScreen.setSound(sfx.muted);
+    menu.setSound(sfx.muted);
     sfx.click();
   };
 
@@ -144,6 +146,9 @@ async function boot(): Promise<void> {
         sfx.unlock();
         sfx.click();
       },
+      onToggleSound: () => {
+        toggleSound();
+      },
       onLanguage: (code) => {
         if (!isLangCode(code)) return;
         sdk.setItem(LANG_KEY, code);
@@ -172,6 +177,7 @@ async function boot(): Promise<void> {
 
   hud.setSoundIcon(sfx.muted);
   pauseScreen.setSound(sfx.muted);
+  menu.setSound(sfx.muted);
 
   keyboard.onPress(['Escape', 'KeyP'], () => {
     if (game.phase === 'playing') setPaused(!game.isPaused);

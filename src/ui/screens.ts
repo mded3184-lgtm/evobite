@@ -5,6 +5,7 @@ import { localFormName } from '@/i18n/gameText';
 import { coinsForRound } from '@/game/economy';
 import type { RoundStats } from '@/game/types';
 import { el, formatTime, must } from './dom';
+import { ICONS } from './icons';
 
 export interface DeathHandlers {
   onRespawn: () => void;
@@ -54,13 +55,13 @@ export class DeathScreen {
         </div>
         ${stats.revengeKills > 0 ? `<div class="death-revenge">${t('death.revenge', { n: stats.revengeKills })}</div>` : ''}
         <div class="menu-row">
-          <button class="btn btn-respawn" type="button">${t('death.respawn')}</button>
-          <button class="btn btn-ghost btn-menu" type="button">${t('death.menu')}</button>
+          <button class="btn btn-respawn" type="button">${ICONS.refresh}<span>${t('death.respawn')}</span></button>
+          <button class="btn btn-ghost btn-menu" type="button">${ICONS.home}<span>${t('death.menu')}</span></button>
         </div>
         <div class="menu-stats">${t('death.summary', { coins: progress.coins, best: Math.floor(progress.bestMass) })}</div>
         ${
           SKINS.some((k) => !progress.ownedSkins.includes(k.id) && progress.coins >= k.price)
-            ? `<div class="death-skin">🎨 ${t('death.skinNudge')}</div>`
+            ? `<div class="death-skin">${t('death.skinNudge')}</div>`
             : ''
         }
       </div>
@@ -112,9 +113,9 @@ export class PauseScreen {
       <div class="panel">
         <h2 class="pause-title">${t('pause.title')}</h2>
         <div class="pause-buttons">
-          <button class="btn btn-resume" type="button">${t('pause.resume')}</button>
+          <button class="btn btn-resume" type="button">${ICONS.play}<span>${t('pause.resume')}</span></button>
           <button class="btn btn-ghost btn-sound" type="button">${t('pause.soundOn')}</button>
-          <button class="btn btn-ghost btn-quit" type="button">${t('pause.quit')}</button>
+          <button class="btn btn-ghost btn-quit" type="button">${ICONS.home}<span>${t('pause.quit')}</span></button>
         </div>
         <p class="hint">${t('pause.hint')}</p>
       </div>
@@ -131,7 +132,7 @@ export class PauseScreen {
   }
 
   setSound(muted: boolean): void {
-    this.soundBtn.textContent = t(muted ? 'pause.soundOff' : 'pause.soundOn');
+    this.soundBtn.innerHTML = `${muted ? ICONS.soundOff : ICONS.soundOn}<span>${t(muted ? 'pause.soundOff' : 'pause.soundOn')}</span>`;
   }
 
   show(): void {

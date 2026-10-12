@@ -261,8 +261,8 @@ export class Renderer {
       this.label(p.x, p.y - r - 26, t('arena.revenge'), '#ff4d6d', 13, true);
     }
 
-    // Name + mass. Hide tiny far-away labels to reduce clutter.
-    if (r >= 9) {
+    // Name + mass. Hide tiny far-away labels, and all labels behind the lobby, to reduce clutter.
+    if (r >= 9 && this.game.phase !== 'menu') {
       const size = Math.max(11, Math.min(22, r * 0.32));
       this.label(
         p.x,

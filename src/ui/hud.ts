@@ -5,6 +5,7 @@ import { localFormName } from '@/i18n/gameText';
 import { nextThreshold } from '@/game/systems/evolution';
 import { buildChipsHtml } from './build';
 import { el, must } from './dom';
+import { ICONS } from './icons';
 
 export interface HudHandlers {
   onPause: () => void;
@@ -50,8 +51,8 @@ export class Hud {
       <div class="hud-toast"></div>
       <div class="hud-build"></div>
       <div class="hud-controls">
-        <button class="hud-btn hud-pause" type="button" aria-label="Pause">❚❚</button>
-        <button class="hud-btn hud-sound" type="button" aria-label="Toggle sound">🔊</button>
+        <button class="hud-btn hud-pause" type="button" aria-label="Pause">${ICONS.pause}</button>
+        <button class="hud-btn hud-sound" type="button" aria-label="Toggle sound">${ICONS.soundOn}</button>
       </div>
       <button class="hud-boost" type="button" aria-label="Boost">${t('hud.boost')}</button>
     `;
@@ -90,7 +91,7 @@ export class Hud {
   }
 
   setSoundIcon(muted: boolean): void {
-    this.soundBtn.textContent = muted ? '🔇' : '🔊';
+    this.soundBtn.innerHTML = muted ? ICONS.soundOff : ICONS.soundOn;
   }
 
   /** Visual state for the boost button (pressed, or unavailable because mass is too low). */
