@@ -5,6 +5,8 @@
  * Browsers only allow audio after a user gesture, so the context is created in `unlock()`,
  * which the UI calls from the Play button click.
  */
+import { Music } from './music';
+
 type Wave = OscillatorType;
 
 interface ToneOpts {
@@ -22,6 +24,7 @@ export class Sfx {
   private master: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
   private boostNode: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
+  private music: Music | null = null;
   private lastOrbAt = 0;
   private orbStreak = 0;
   private _muted: boolean;
@@ -56,6 +59,11 @@ export class Sfx {
       this.master.gain.setTargetAtTime(this.silent ? 0 : 0.5, this.ctx.currentTime, 0.02);
     }
     if (this.silent) this.boost(false);
+    // The soundtrack only runs while audible, so a muted tab schedules nothing.
+    if (this.music) {
+      if (this.silent) this.music.stop();
+      else this.music.start();
+    }
   }
 
   /** Must be called from a user gesture (click / key / touch). Safe to call repeatedly. */
@@ -73,6 +81,8 @@ export class Sfx {
       this.master.gain.value = this.silent ? 0 : 0.5;
       this.master.connect(this.ctx.destination);
       this.noiseBuffer = this.makeNoise();
+      this.music = new Music(this.ctx, this.master);
+      if (!this.silent) this.music.start();
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
   }
@@ -102,6 +112,13 @@ export class Sfx {
   chomp(): void {
     this.noise({ dur: 0.12, gain: 0.35, filter: 900 });
     this.tone({ freq: 220, to: 90, dur: 0.18, type: 'square', gain: 0.12 });
+  }
+
+  /** Quick kills in a row: a short rising chime, higher with every link. */
+  combo(n: number): void {
+    const base = 660 * Math.pow(1.12, Math.min(n, 8) - 2);
+    this.tone({ freq: base, dur: 0.09, type: 'triangle', gain: 0.16 });
+    this.tone({ freq: base * 1.5, dur: 0.16, type: 'triangle', gain: 0.16, delay: 0.07 });
   }
 
   revenge(): void {

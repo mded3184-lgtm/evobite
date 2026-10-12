@@ -41,6 +41,12 @@ export const fr: Messages = {
   'toast.ate': 'Tu as mangé {name}',
   'toast.revenge': 'VENGEANCE sur {name} !',
   'arena.revenge': 'VENGEANCE',
+  'hint.eat': 'Mange des orbes et des créatures plus petites pour grandir',
+  'hint.avoid': 'Fuis tout ce qui est plus gros que toi',
+  'hint.boostKey': 'Maintiens Espace pour accélérer',
+  'hint.boostTouch': 'Maintiens le bouton pour accélérer',
+  'arena.shield': 'Bouclier {s}s',
+  'toast.combo': 'Combo x{n} !',
 
   'picker.paused': 'Jeu en pause',
   'picker.title': 'Évolution {n} / 4 — choisis ta voie',

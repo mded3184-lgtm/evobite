@@ -145,6 +145,7 @@ function creature(
   skinId: string,
   path: BranchId[],
   boosting = false,
+  mood: 'none' | 'hungry' | 'scared' = 'none',
 ): void {
   const skin = getSkin(skinId);
   drawCreatureArt(ctx, {
@@ -158,6 +159,7 @@ function creature(
     time: 0.35,
     boosting,
     magnetPx: 0,
+    mood,
   });
 }
 
@@ -228,7 +230,7 @@ function render(): void {
   // Fleeing prey, looking back at the hero.
   for (const q of p.prey) {
     const away = norm(q.x - p.hero.x, q.y - p.hero.y);
-    creature(q.x, q.y, q.r, { x: -away.x, y: -away.y }, q.skin, ['swift']);
+    creature(q.x, q.y, q.r, { x: -away.x, y: -away.y }, q.skin, ['swift'], false, 'scared');
     // Little sweat drop.
     ctx.fillStyle = '#9fd8ff';
     ctx.beginPath();

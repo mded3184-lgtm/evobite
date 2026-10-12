@@ -1083,6 +1083,44 @@ select {
   color: var(--danger);
 }
 
+.hud-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  transform: translate(-50%, 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  padding: 0.7em 1em;
+  border-radius: 1em;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  box-shadow: 0 4px 0 var(--ink);
+  font-size: 0.95em;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.hud-hint.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.hud-hint-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  white-space: nowrap;
+}
+.hud-hint-row svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
+  color: var(--mint);
+}
+
 .hud-controls {
   position: absolute;
   left: 50%;

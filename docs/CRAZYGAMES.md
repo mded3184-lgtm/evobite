@@ -51,6 +51,14 @@ Sources: <https://docs.crazygames.com/requirements/> (gameplay, quality, technic
 4. Choose category and tags from the listing. Don't choose .io or Multiplayer.
 5. Upload the 3 covers and 2 trailers, then paste the description and controls.
 
+## Resubmission after "overall quality" rejection
+
+The first submission was rejected for overall quality. Changes made in response:
+
+- First minute: 10 s spawn shield with a countdown, spawn away from giants, a ring of orbs around the spawn, first evolution at mass 25, and a three-line hint card for the first three rounds.
+- Graphics: nebula background with parallax, glowing food patches, breathing and blinking creatures with expressions (predators grin, prey look worried), open-mouth bites, evolution rings and flash, a glowing arena wall and a darkened outside.
+- Game feel: screen shake and a camera punch on kills, hit-stop, floating mass numbers, kill combos, and a procedural ambient soundtrack.
+
 ## Basic Launch metrics to watch (2 weeks)
 
 | Metric                 | Target  | Lever if low                                                   |

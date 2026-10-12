@@ -41,6 +41,12 @@ export const de: Messages = {
   'toast.ate': '{name} gefressen',
   'toast.revenge': 'RACHE an {name}!',
   'arena.revenge': 'RACHE',
+  'hint.eat': 'Friss Kugeln und kleinere Wesen, um zu wachsen',
+  'hint.avoid': 'Lauf vor allem weg, was größer ist als du',
+  'hint.boostKey': 'Leertaste halten für Boost',
+  'hint.boostTouch': 'Taste halten für Boost',
+  'arena.shield': 'Schild {s}s',
+  'toast.combo': '{n}x Combo!',
 
   'picker.paused': 'Spiel pausiert',
   'picker.title': 'Evolution {n} / 4 — wähle deinen Weg',

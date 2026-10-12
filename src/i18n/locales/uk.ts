@@ -41,6 +41,12 @@ export const uk: Messages = {
   'toast.ate': 'З’їдено {name}',
   'toast.revenge': 'ПОМСТА гравцю {name}!',
   'arena.revenge': 'ПОМСТА',
+  'hint.eat': 'Їж кульки та менших істот, щоб рости',
+  'hint.avoid': 'Тікай від усіх, хто більший за тебе',
+  'hint.boostKey': 'Тримай пробіл для прискорення',
+  'hint.boostTouch': 'Тримай кнопку для прискорення',
+  'arena.shield': 'Щит {s}с',
+  'toast.combo': 'Комбо x{n}!',
 
   'picker.paused': 'Гру призупинено',
   'picker.title': 'Еволюція {n} / 4 — обери свій шлях',

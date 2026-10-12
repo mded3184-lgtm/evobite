@@ -29,6 +29,8 @@ export class Game {
   private revengeKills = 0;
   private userPaused = false;
   private lastRound: RoundStats | null = null;
+  /** Seconds the simulation still stays frozen after an impact (hit-stop). */
+  private hitStop = 0;
 
   constructor(seed?: number) {
     this.world = new World(seed);
@@ -38,6 +40,7 @@ export class Game {
 
     this.world.events.on('creatureEaten', ({ eater, prey, revenge }) => {
       if (eater.kind === 'player' && revenge) this.revengeKills++;
+      if (eater.kind === 'player') this.hitStop = CONFIG.feel.hitStopSec;
       if (prey.kind === 'player') this.onPlayerDied(eater);
     });
   }
@@ -65,6 +68,9 @@ export class Game {
     const skin = getSkin(this.playerSkin) ?? getSkin(DEFAULT_SKIN_ID);
     player.skin = skin?.id ?? null;
     player.hue = skin?.hue ?? 165;
+    // Spawn shield: long enough to find your bearings and eat the welcome orbs.
+    player.invulnUntil = this.world.time + CONFIG.player.graceSec;
+    this.spawnWelcomeOrbs(spawn);
     if (lastKiller !== null && this.world.creatures.get(lastKiller)?.alive) {
       player.lastKillerId = lastKiller;
       player.revengeUntil = this.world.time + CONFIG.revenge.windowSec;
@@ -111,7 +117,18 @@ export class Game {
     // Single-player arena: while the player is choosing an evolution or has paused,
     // the whole world freezes, so nobody can sneak up and eat them.
     if (this.isChoosing || this.isPaused) return;
+    if (this.hitStop > 0) {
+      this.hitStop -= dt;
+      return;
+    }
     this.stepWorld(dt);
+  }
+
+  /** Seconds of spawn shield the player has left, 0 when none. */
+  get shieldLeft(): number {
+    const p = this.world.player;
+    if (!p?.alive) return 0;
+    return Math.max(0, p.invulnUntil - this.world.time);
   }
 
   /** Player-requested pause. Only meaningful during a live round. */
@@ -169,25 +186,47 @@ export class Game {
     this.lastRound = this.world.roundStatsFor(p, this.revengeKills);
     this.phase = 'dead';
     this.world.paused = false;
+    this.hitStop = CONFIG.feel.deathStopSec;
     this.world.events.emit('playerDied', { killer, stats: this.lastRound });
   }
 
-  /** Find a spawn point with no creature that could eat a fresh hatchling nearby. */
+  /** A ring of orbs around the spawn so a hatchling grows from second one. */
+  private spawnWelcomeOrbs(at: Vec2): void {
+    const { welcomeOrbs, welcomeRadius } = CONFIG.player;
+    const rng = this.world.rng;
+    for (let i = 0; i < welcomeOrbs; i++) {
+      const a = (i / welcomeOrbs) * Math.PI * 2 + rng.range(-0.2, 0.2);
+      const d = welcomeRadius * (0.35 + 0.65 * Math.sqrt(rng.next()));
+      this.world.spawnOrb({ x: at.x + Math.cos(a) * d, y: at.y + Math.sin(a) * d });
+    }
+  }
+
+  /**
+   * Find a spawn point with nothing that could eat a fresh hatchling nearby, and no giant
+   * within a wider radius: the first seconds should be about eating, not fleeing.
+   */
   private safeSpawnPoint(): Vec2 {
-    const minDist = 420;
-    for (let attempt = 0; attempt < 20; attempt++) {
-      const pt = this.world.randomPointInArena(300);
-      let safe = true;
+    const nearDist = 650;
+    const giantDist = 1100;
+    const giantMass = 100;
+    let best: Vec2 | null = null;
+    let bestScore = -Infinity;
+    for (let attempt = 0; attempt < 24; attempt++) {
+      const pt = this.world.randomPointInArena(400);
+      let score = Infinity;
       for (const c of this.world.creatures.values()) {
         if (!c.alive || c.mass < CONFIG.player.startMass * 1.1) continue;
-        if (Math.hypot(c.pos.x - pt.x, c.pos.y - pt.y) < minDist) {
-          safe = false;
-          break;
-        }
+        const d = Math.hypot(c.pos.x - pt.x, c.pos.y - pt.y);
+        const limit = c.mass >= giantMass ? giantDist : nearDist;
+        score = Math.min(score, d - limit);
       }
-      if (safe) return pt;
+      if (score >= 0) return pt;
+      if (score > bestScore) {
+        bestScore = score;
+        best = pt;
+      }
     }
-    return this.world.randomPointInArena(300);
+    return best ?? this.world.randomPointInArena(400);
   }
 
   /** Form key for the round, or null if the player did not complete all tiers. */

@@ -41,6 +41,12 @@ export const id: Messages = {
   'toast.ate': 'Memakan {name}',
   'toast.revenge': 'BALAS DENDAM ke {name}!',
   'arena.revenge': 'BALAS DENDAM',
+  'hint.eat': 'Makan bola dan makhluk yang lebih kecil untuk tumbuh',
+  'hint.avoid': 'Lari dari apa pun yang lebih besar darimu',
+  'hint.boostKey': 'Tahan Spasi untuk melaju',
+  'hint.boostTouch': 'Tahan tombol untuk melaju',
+  'arena.shield': 'Perisai {s}d',
+  'toast.combo': 'Kombo x{n}!',
 
   'picker.paused': 'Game dijeda',
   'picker.title': 'Evolusi {n} / 4 — pilih jalanmu',

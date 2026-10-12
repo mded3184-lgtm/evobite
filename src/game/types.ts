@@ -49,6 +49,8 @@ export interface Creature {
   boosting: boolean;
   /** Burned mass waiting to be dropped as an orb. */
   boostDropAcc: number;
+  /** World time of the last bite, for the chomp animation. */
+  lastAteAt: number;
   bot: BotBrain | null;
 }
 

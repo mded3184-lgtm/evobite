@@ -41,6 +41,12 @@ export const it: Messages = {
   'toast.ate': 'Hai mangiato {name}',
   'toast.revenge': 'VENDETTA su {name}!',
   'arena.revenge': 'VENDETTA',
+  'hint.eat': 'Mangia sfere e creature più piccole per crescere',
+  'hint.avoid': 'Scappa da tutto ciò che è più grande di te',
+  'hint.boostKey': 'Tieni premuto Spazio per accelerare',
+  'hint.boostTouch': 'Tieni premuto il pulsante per accelerare',
+  'arena.shield': 'Scudo {s}s',
+  'toast.combo': 'Combo x{n}!',
 
   'picker.paused': 'Gioco in pausa',
   'picker.title': 'Evoluzione {n} / 4 — scegli la tua strada',

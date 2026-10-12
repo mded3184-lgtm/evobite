@@ -41,6 +41,12 @@ export const tr: Messages = {
   'toast.ate': '{name} yendi',
   'toast.revenge': '{name} için İNTİKAM!',
   'arena.revenge': 'İNTİKAM',
+  'hint.eat': 'Büyümek için küreleri ve küçük yaratıkları ye',
+  'hint.avoid': 'Senden büyük her şeyden kaç',
+  'hint.boostKey': 'Hızlanmak için Boşluk tuşunu basılı tut',
+  'hint.boostTouch': 'Hızlanmak için düğmeyi basılı tut',
+  'arena.shield': 'Kalkan {s}s',
+  'toast.combo': '{n}x kombo!',
 
   'picker.paused': 'Oyun duraklatıldı',
   'picker.title': 'Evrim {n} / 4 — yolunu seç',

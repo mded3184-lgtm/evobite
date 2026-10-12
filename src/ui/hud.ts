@@ -25,11 +25,13 @@ export class Hud {
   private readonly rank: HTMLElement;
   private readonly board: HTMLElement;
   private readonly toast: HTMLElement;
+  private readonly hint: HTMLElement;
   private readonly build: HTMLElement;
   private readonly soundBtn: HTMLButtonElement;
   private readonly boostBtn: HTMLButtonElement;
   private accumulator = 0;
   private toastTimer = 0;
+  private hintTimer = 0;
   private boostTouch = false;
 
   constructor(
@@ -49,6 +51,7 @@ export class Hud {
         <ol class="hud-board"></ol>
       </div>
       <div class="hud-toast"></div>
+      <div class="hud-hint"></div>
       <div class="hud-build"></div>
       <div class="hud-controls">
         <button class="hud-btn hud-pause" type="button" aria-label="Pause">${ICONS.pause}</button>
@@ -65,6 +68,7 @@ export class Hud {
     this.board = must('.hud-board', this.root);
     this.build = must('.hud-build', this.root);
     this.toast = must('.hud-toast', this.root);
+    this.hint = must('.hud-hint', this.root);
     this.soundBtn = must<HTMLButtonElement>('.hud-sound', this.root);
     this.boostBtn = must<HTMLButtonElement>('.hud-boost', this.root);
     must<HTMLButtonElement>('.hud-pause', this.root).addEventListener('click', handlers.onPause);
@@ -108,6 +112,29 @@ export class Hud {
   hide(): void {
     this.root.classList.add('hidden');
     this.boostTouch = false;
+    this.hideHint();
+  }
+
+  /** Three-line onboarding card for the first rounds; goes away by itself or on hideHint(). */
+  showHint(touch: boolean, seconds = 9): void {
+    const lines = [
+      [ICONS.target, t('hint.eat')],
+      [ICONS.flag, t('hint.avoid')],
+      [ICONS.bolt, touch ? t('hint.boostTouch') : t('hint.boostKey')],
+    ];
+    this.hint.innerHTML = lines
+      .map(
+        ([icon, text]) =>
+          `<div class="hud-hint-row">${icon ?? ''}<span>${escapeHtml(text ?? '')}</span></div>`,
+      )
+      .join('');
+    this.hint.classList.add('show');
+    this.hintTimer = seconds;
+  }
+
+  hideHint(): void {
+    this.hintTimer = 0;
+    this.hint.classList.remove('show');
   }
 
   announce(text: string, kind: 'good' | 'bad' | 'info' = 'info'): void {
@@ -121,6 +148,10 @@ export class Hud {
     if (this.toastTimer > 0) {
       this.toastTimer -= dt;
       if (this.toastTimer <= 0) this.toast.classList.remove('show');
+    }
+    if (this.hintTimer > 0) {
+      this.hintTimer -= dt;
+      if (this.hintTimer <= 0) this.hint.classList.remove('show');
     }
     if (this.accumulator < 0.1) return;
     this.accumulator = 0;

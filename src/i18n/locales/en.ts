@@ -43,6 +43,12 @@ export const en = {
   'toast.ate': 'Ate {name}',
   'toast.revenge': 'REVENGE on {name}!',
   'arena.revenge': 'REVENGE',
+  'hint.eat': 'Eat orbs and smaller creatures to grow',
+  'hint.avoid': 'Run from anything bigger than you',
+  'hint.boostKey': 'Hold Space to boost',
+  'hint.boostTouch': 'Hold the button to boost',
+  'arena.shield': 'Shield {s}s',
+  'toast.combo': '{n}x combo!',
 
   'picker.paused': 'Game paused',
   'picker.title': 'Evolution {n} / 4 — choose your path',

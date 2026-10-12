@@ -83,6 +83,7 @@ export class World {
       revengeUntil: 0,
       boosting: false,
       boostDropAcc: 0,
+      lastAteAt: -10,
       bot:
         kind === 'bot'
           ? {
@@ -100,11 +101,35 @@ export class World {
     return c;
   }
 
+  /**
+   * Most orbs respawn next to an existing one, so food gathers in patches the player can
+   * graze through instead of an even sprinkle over the whole arena.
+   */
+  private orbSpawnPoint(): Vec2 {
+    const orbs = this.orbs;
+    if (orbs.length > 0 && this.rng.chance(CONFIG.orbs.clusterChance)) {
+      const near = orbs[this.rng.int(0, orbs.length - 1)];
+      if (near?.alive) {
+        const a = this.rng.next() * Math.PI * 2;
+        const d = CONFIG.orbs.clusterSpread * Math.sqrt(this.rng.next());
+        const p = { x: near.pos.x + Math.cos(a) * d, y: near.pos.y + Math.sin(a) * d };
+        const limit = CONFIG.arena.radius - 20;
+        const len = Math.hypot(p.x, p.y);
+        if (len > limit) {
+          p.x *= limit / len;
+          p.y *= limit / len;
+        }
+        return p;
+      }
+    }
+    return this.randomPointInArena(20);
+  }
+
   spawnOrb(pos?: Vec2, size?: { mass: number; radius: number; hue: number }): Orb {
     const big = this.rng.chance(CONFIG.orbs.bigChance);
     const orb: Orb = {
       id: this.nextId++,
-      pos: pos ?? this.randomPointInArena(20),
+      pos: pos ?? this.orbSpawnPoint(),
       mass: size?.mass ?? (big ? CONFIG.orbs.bigMass : CONFIG.orbs.mass),
       radius: size?.radius ?? (big ? CONFIG.orbs.bigRadius : CONFIG.orbs.radius),
       hue: size?.hue ?? this.rng.int(0, 359),

@@ -92,16 +92,23 @@ async function boot(): Promise<void> {
   // ---- rounds -------------------------------------------------------------
 
   const startRound = (): void => {
+    combo = 0;
+    lastKillAt = -Infinity;
     game.startRound();
     renderer.snapToPlayer();
     menu.hide();
     death.hide();
     pauseScreen.hide();
     hud.show();
+    // Onboarding card for the first rounds only; it hides itself and on the first evolution.
+    if (progress.rounds < 3) hud.showHint(isTouch);
     sdk.gameplayStart();
   };
 
   let respawning = false;
+  /** Consecutive kills inside the combo window, and when the last one happened. */
+  let combo = 0;
+  let lastKillAt = -Infinity;
   /** Seconds of actual play this session (menus, pauses and evolution choices excluded). */
   let playedSeconds = 0;
 
@@ -212,6 +219,7 @@ async function boot(): Promise<void> {
   });
   game.world.events.on('evolutionOffer', ({ creature, tier }) => {
     sfx.offer();
+    hud.hideHint();
     picker.open(tier, creature.path, (id) => {
       game.chooseBranch(id);
       hud.announce(t('toast.evolved', { name: branchName(id) }), 'good');
@@ -221,14 +229,20 @@ async function boot(): Promise<void> {
   });
   game.world.events.on('creatureEaten', ({ eater, prey, revenge }) => {
     if (eater.kind !== 'player') return;
-    hud.announce(
-      revenge ? t('toast.revenge', { name: prey.name }) : t('toast.ate', { name: prey.name }),
-      revenge ? 'good' : 'info',
-    );
+    const now = game.world.time;
+    combo = now - lastKillAt <= CONFIG.feel.comboWindowSec ? combo + 1 : 1;
+    lastKillAt = now;
     if (revenge) {
+      hud.announce(t('toast.revenge', { name: prey.name }), 'good');
       sfx.revenge();
       sdk.happyTime();
+    } else if (combo >= 2) {
+      hud.announce(t('toast.combo', { n: combo }), 'good');
+      sfx.chomp();
+      sfx.combo(combo);
+      if (combo === 3) sdk.happyTime();
     } else {
+      hud.announce(t('toast.ate', { name: prey.name }), 'info');
       sfx.chomp();
     }
   });

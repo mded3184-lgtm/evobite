@@ -17,6 +17,7 @@ Start as a tiny blob in a crowded arena. Eat glowing orbs and smaller creatures 
 Every time you grow you evolve. Choose one of two paths at each of the four stages: get faster with **Swift**, poison anyone who touches you with **Venom**, become a **Hunter** that eats creatures almost your size, or turn into an unstoppable **Titan**. With 16 different final forms, every round plays out differently.
 
 - Boost to catch prey or escape danger, but it costs you mass.
+- Chain kills for combos, and feel every bite: screen shake, slow-motion impacts and a chill original soundtrack.
 - Got eaten? Respawn and take **revenge** on your killer for a big bonus.
 - Earn coins every round and unlock 10 skins, from Ocean to Galaxy and Rainbow.
 - Climb the live leaderboard and reach #1.

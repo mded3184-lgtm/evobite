@@ -13,6 +13,11 @@ export const CONFIG = {
     startMass: 12,
     /** Target FPS-independent turning smoothness (higher = snappier). */
     steerLambda: 9,
+    /** Spawn shield: nothing can eat a fresh player for this long, and bots don't hunt them. */
+    graceSec: 10,
+    /** Orbs sprinkled around the spawn point so the first seconds are about growing. */
+    welcomeOrbs: 26,
+    welcomeRadius: 260,
   },
   creature: {
     /** radius = radiusBase * sqrt(mass). */
@@ -37,7 +42,10 @@ export const CONFIG = {
     decaySoftCap: 1000,
   },
   orbs: {
-    count: 1100,
+    count: 1700,
+    /** Share of respawned orbs placed next to an existing orb, so food forms patches. */
+    clusterChance: 0.6,
+    clusterSpread: 70,
     mass: 2,
     radius: 7,
     /** Big orbs: rarer, juicier, slightly off-center from spawn clusters. */
@@ -89,7 +97,14 @@ export const CONFIG = {
   },
   evolution: {
     /** Mass thresholds at which a branch choice is offered. */
-    thresholds: [30, 80, 200, 480] as const,
+    thresholds: [25, 70, 180, 450] as const,
+  },
+  feel: {
+    /** Simulation freeze when the player eats a creature, seconds. Sells the impact. */
+    hitStopSec: 0.07,
+    deathStopSec: 0.14,
+    /** Kills this close together count as a combo. */
+    comboWindowSec: 4,
   },
   revenge: {
     /** Bonus mass fraction when you eat the creature that last killed you. */

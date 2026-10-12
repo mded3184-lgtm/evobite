@@ -41,6 +41,12 @@ export const ru: Messages = {
   'toast.ate': 'Съеден {name}',
   'toast.revenge': 'МЕСТЬ игроку {name}!',
   'arena.revenge': 'МЕСТЬ',
+  'hint.eat': 'Ешь шарики и существ поменьше, чтобы расти',
+  'hint.avoid': 'Убегай от всех, кто больше тебя',
+  'hint.boostKey': 'Держи пробел для ускорения',
+  'hint.boostTouch': 'Держи кнопку для ускорения',
+  'arena.shield': 'Щит {s}с',
+  'toast.combo': 'Комбо x{n}!',
 
   'picker.paused': 'Игра на паузе',
   'picker.title': 'Эволюция {n} / 4 — выбери свой путь',

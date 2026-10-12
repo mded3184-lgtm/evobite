@@ -41,6 +41,12 @@ export const pl: Messages = {
   'toast.ate': 'Zjedzono {name}',
   'toast.revenge': 'ZEMSTA na {name}!',
   'arena.revenge': 'ZEMSTA',
+  'hint.eat': 'Jedz kulki i mniejsze stworzenia, żeby rosnąć',
+  'hint.avoid': 'Uciekaj przed wszystkim, co większe od ciebie',
+  'hint.boostKey': 'Przytrzymaj spację, by przyspieszyć',
+  'hint.boostTouch': 'Przytrzymaj przycisk, by przyspieszyć',
+  'arena.shield': 'Tarcza {s}s',
+  'toast.combo': 'Kombo x{n}!',
 
   'picker.paused': 'Gra wstrzymana',
   'picker.title': 'Ewolucja {n} / 4 — wybierz swoją drogę',

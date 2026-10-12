@@ -25,6 +25,12 @@ export interface CreatureArt {
   magnetPx?: number;
   /** Slightly brighter body for the player's own creature without a skin. */
   self?: boolean;
+  /** Per-creature phase so breathing and blinking aren't in lockstep. */
+  phase?: number;
+  /** Expression: predators grin with teeth, prey look worried. 'none' skips the mouth. */
+  mood?: 'neutral' | 'hungry' | 'scared' | 'none';
+  /** 0..1, how wide the mouth is open right after a bite. */
+  chomp?: number;
 }
 
 // Fixed spot layout (unit circle coords + size) so spots don't flicker frame to frame.
@@ -47,7 +53,11 @@ const STARS: readonly (readonly [number, number])[] = [
 ];
 
 export function drawCreatureArt(ctx: CanvasRenderingContext2D, a: CreatureArt): void {
-  const { x, y, r, dir, path, time } = a;
+  const { x, dir, path, time } = a;
+  const y = a.y;
+  const phase = a.phase ?? 0;
+  // Breathing: a slow, slight swell so creatures never look like static stickers.
+  const r = a.r * (1 + 0.025 * Math.sin(time * 2.4 + phase * 1.7));
   const has = (id: BranchId): boolean => path.includes(id);
   const skin = a.skin;
   const plain = `hsl(${String(a.hue)} 70% ${a.self ? '60' : '52'}%)`;
@@ -173,21 +183,34 @@ export function drawCreatureArt(ctx: CanvasRenderingContext2D, a: CreatureArt): 
     ctx.fill();
   }
 
-  // Eyes.
+  // Eyes. Prey open them wide, predators narrow them under angry brows.
   const hunter = has('hunter');
+  const mood = a.mood ?? 'neutral';
   const eyeOff = r * 0.38;
-  const eyeR = Math.max(1.5, r * (hunter ? 0.2 : 0.16));
+  const eyeR = Math.max(1.5, r * (hunter ? 0.2 : mood === 'scared' ? 0.19 : 0.16));
   const sx = -dir.y;
   const sy = dir.x;
+  const blink = (time * 0.41 + phase * 0.73) % 3.9 < 0.1;
   for (const sign of [-1, 1]) {
     const ex = x + dir.x * eyeOff + sx * eyeOff * 0.75 * sign;
     const ey = y + dir.y * eyeOff + sy * eyeOff * 0.75 * sign;
+    if (blink) {
+      ctx.strokeStyle = '#101418';
+      ctx.lineWidth = Math.max(1, eyeR * 0.35);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(ex - sx * eyeR, ey - sy * eyeR);
+      ctx.lineTo(ex + sx * eyeR, ey + sy * eyeR);
+      ctx.stroke();
+      continue;
+    }
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.arc(ex, ey, eyeR, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = hunter ? '#ff3b3b' : '#101418';
     ctx.beginPath();
+    const pupil = mood === 'scared' ? 0.38 : 0.5;
     if (hunter) {
       ctx.ellipse(
         ex + dir.x * eyeR * 0.35,
@@ -199,15 +222,112 @@ export function drawCreatureArt(ctx: CanvasRenderingContext2D, a: CreatureArt): 
         Math.PI * 2,
       );
     } else {
-      ctx.arc(ex + dir.x * eyeR * 0.35, ey + dir.y * eyeR * 0.35, eyeR * 0.5, 0, Math.PI * 2);
+      ctx.arc(ex + dir.x * eyeR * 0.35, ey + dir.y * eyeR * 0.35, eyeR * pupil, 0, Math.PI * 2);
     }
     ctx.fill();
+    if (mood === 'hungry') {
+      // Angry brow: a short slanted line over the eye, dropping toward the nose.
+      ctx.strokeStyle = '#101418';
+      ctx.lineWidth = Math.max(1, eyeR * 0.3);
+      ctx.lineCap = 'round';
+      const bx = ex + dir.x * eyeR * 0.3;
+      const by = ey + dir.y * eyeR * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(bx + sx * eyeR * 1.1 * sign, by + sy * eyeR * 1.1 * sign);
+      ctx.lineTo(
+        bx - sx * eyeR * 0.2 * sign + dir.x * eyeR * 0.55,
+        by - sy * eyeR * 0.2 * sign + dir.y * eyeR * 0.55,
+      );
+      ctx.stroke();
+    }
   }
+
+  if (mood !== 'none') drawMouth(ctx, x, y, r, dir, mood, a.chomp ?? 0, edge);
 
   if (boosting) {
     ctx.restore();
     drawBowWave(ctx, x, y, r, dir, time);
   }
+}
+
+/**
+ * Mouth on the leading edge, just past the eyes. Neutral is a small smile, prey show a
+ * worried "o", predators a toothy grin; any of them opens wide for a moment after a bite.
+ */
+function drawMouth(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  dir: Vec2,
+  mood: 'neutral' | 'hungry' | 'scared',
+  chomp: number,
+  edge: string,
+): void {
+  const mx = x + dir.x * r * 0.7;
+  const my = y + dir.y * r * 0.7;
+  const angle = Math.atan2(dir.y, dir.x);
+  const dark = '#2a0a16';
+  if (chomp > 0.02) {
+    // Open maw with a tongue, scaled by how fresh the bite is.
+    const open = 0.08 + 0.2 * chomp;
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.ellipse(mx, my, r * open, r * 0.3, angle, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff6b9a';
+    ctx.beginPath();
+    ctx.ellipse(
+      mx - dir.x * r * open * 0.3,
+      my - dir.y * r * open * 0.3,
+      r * open * 0.5,
+      r * 0.16,
+      angle,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+    return;
+  }
+  if (mood === 'hungry') {
+    // Grin: dark slit with a row of teeth along the upper lip.
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.ellipse(mx, my, r * 0.11, r * 0.32, angle, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    const sx = -dir.y;
+    const sy = dir.x;
+    for (let i = -1; i <= 1; i++) {
+      const tx = mx + sx * r * 0.2 * i - dir.x * r * 0.1;
+      const ty = my + sy * r * 0.2 * i - dir.y * r * 0.1;
+      ctx.beginPath();
+      ctx.moveTo(tx + sx * r * 0.06, ty + sy * r * 0.06);
+      ctx.lineTo(tx - sx * r * 0.06, ty - sy * r * 0.06);
+      ctx.lineTo(tx + dir.x * r * 0.14, ty + dir.y * r * 0.14);
+      ctx.closePath();
+      ctx.fill();
+    }
+    return;
+  }
+  if (mood === 'scared') {
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.arc(mx, my, Math.max(1, r * 0.09), 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+  // Neutral: a short closed mouth across the direction of travel. Symmetric on purpose, so
+  // it never reads as an eyebrow whichever way the creature faces.
+  const sx = -dir.y;
+  const sy = dir.x;
+  ctx.strokeStyle = edge;
+  ctx.lineWidth = Math.max(1, r * 0.07);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(mx + sx * r * 0.14, my + sy * r * 0.14);
+  ctx.lineTo(mx - sx * r * 0.14, my - sy * r * 0.14);
+  ctx.stroke();
 }
 
 /** Animated streaks trailing behind a boosting creature. */

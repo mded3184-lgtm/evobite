@@ -48,6 +48,7 @@ function absorb(world: World, eater: Creature, prey: Creature): void {
   eater.mass += gained;
   eater.maxMass = Math.max(eater.maxMass, eater.mass);
   eater.kills += 1;
+  eater.lastAteAt = world.time;
   prey.alive = false;
   prey.lastKillerId = eater.id;
   world.events.emit('creatureEaten', { eater, prey, revenge });
@@ -77,6 +78,7 @@ export function eatingSystem(world: World, dt: number): void {
         orb.alive = false;
         c.mass += orb.mass * c.stats.foodMult;
         c.maxMass = Math.max(c.maxMass, c.mass);
+        c.lastAteAt = world.time;
         world.events.emit('orbEaten', { eater: c, orb });
       } else if (magnet > 0 && d2 <= magnetSq) {
         const d = Math.sqrt(d2) || 1;

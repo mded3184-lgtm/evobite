@@ -16,8 +16,37 @@ const MENU_ZOOM_MASS = 150;
 const BOOST_ZOOM_KICK = 1.08;
 /** Orb hues are quantized to this many buckets so orbs can be drawn in a few batched fills. */
 export const ORB_HUE_BUCKETS = 12;
-const GRID = 'rgba(255,255,255,0.045)';
-const WALL = 'rgba(255, 80, 120, 0.55)';
+const GRID = 'rgba(255,255,255,0.035)';
+const FONT = "'Nunito Variable', 'Nunito', system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+/** Nebula tile size in world units; it repeats, so blobs are drawn wrapped at the edges. */
+const TILE = 1400;
+/** The nebula scrolls slower than the arena, which reads as depth. */
+const PARALLAX = 0.4;
+
+interface Shake {
+  time: number;
+  duration: number;
+  amplitude: number;
+}
+
+interface FloatingText {
+  pos: Vec2;
+  text: string;
+  color: string;
+  life: number;
+  maxLife: number;
+}
+
+interface Ring {
+  /** Follows a creature while it lives, else stays where it was spawned. */
+  follow: Creature | null;
+  pos: Vec2;
+  radius: number;
+  color: string;
+  life: number;
+  maxLife: number;
+  width: number;
+}
 
 /**
  * Canvas 2D renderer. Everything is vector-drawn, so the whole game ships without a single
@@ -28,6 +57,15 @@ export class Renderer {
   readonly particles: Particles;
   private readonly ctx: CanvasRenderingContext2D;
   private dpr = 1;
+  private nebula: CanvasPattern | null = null;
+  private vignette: CanvasGradient | null = null;
+  private pulse = 0;
+  private shake: Shake = { time: 0, duration: 0, amplitude: 0 };
+  /** Camera zoom-in punch, 1 right after a kill, decaying to 0. */
+  private punch = 0;
+  private flash = { alpha: 0, color: '#ffffff' };
+  private readonly texts: FloatingText[] = [];
+  private readonly rings: Ring[] = [];
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -37,6 +75,7 @@ export class Renderer {
     if (!ctx) throw new Error('Canvas 2D context unavailable');
     this.ctx = ctx;
     this.particles = new Particles(game.world.rng);
+    this.nebula = this.makeNebula();
     this.resize();
     window.addEventListener('resize', () => {
       this.resize();
@@ -44,33 +83,47 @@ export class Renderer {
 
     game.world.events.on('orbEaten', ({ eater, orb }) => {
       if (this.isVisible(orb.pos)) this.particles.burst(orb.pos, orb.hue, 4, 90, orb.radius * 0.5);
-      if (eater.kind === 'player') this.pulse = Math.min(1, this.pulse + 0.15);
-    });
-    game.world.events.on('creatureEaten', ({ prey }) => {
-      if (this.isVisible(prey.pos)) {
-        this.particles.burst(
-          prey.pos,
-          prey.hue,
-          26,
-          260,
-          this.game.world.radiusFor(prey.mass) * 0.25,
-        );
+      if (eater.kind !== 'player') return;
+      this.pulse = Math.min(1, this.pulse + 0.15);
+      if (orb.mass >= CONFIG.orbs.bigMass) {
+        this.float(orb.pos, `+${String(Math.round(orb.mass * eater.stats.foodMult))}`, '#ffd34d');
       }
+    });
+    game.world.events.on('creatureEaten', ({ eater, prey, revenge }) => {
+      const world = this.game.world;
+      const preyR = world.radiusFor(prey.mass);
+      if (this.isVisible(prey.pos)) {
+        this.particles.burst(prey.pos, prey.hue, 26, 260, preyR * 0.25);
+        this.ring(null, prey.pos, preyR * 0.6, `hsl(${String(prey.hue)} 90% 70%)`, 0.35, 4);
+      }
+      if (eater.kind !== 'player') return;
+      const gained = Math.round(
+        prey.mass * CONFIG.creature.absorbFraction * eater.stats.absorbMult +
+          (revenge ? prey.mass * CONFIG.revenge.bonusMass : 0),
+      );
+      this.float(eater.pos, `+${String(gained)}`, revenge ? '#ff4d6d' : '#9dffb0', 1.2);
+      // Bigger meal, bigger thump.
+      const size = Math.min(1, prey.mass / Math.max(1, eater.mass));
+      this.shakeScreen(5 + size * 12, 0.22 + size * 0.15);
+      this.punch = 1;
+    });
+    game.world.events.on('playerDied', ({ killer }) => {
+      this.shakeScreen(18, 0.45);
+      this.flash = { alpha: 0.35, color: '#ff4d6d' };
+      const p = this.game.world.player;
+      if (p) this.ring(killer, p.pos, this.game.world.radiusFor(killer.mass), '#ff4d6d', 0.5, 6);
     });
     game.world.events.on('evolved', ({ creature }) => {
-      if (creature.kind === 'player') {
-        this.particles.burst(
-          creature.pos,
-          creature.hue,
-          60,
-          420,
-          this.game.world.radiusFor(creature.mass) * 0.3,
-        );
-      }
+      if (creature.kind !== 'player') return;
+      const r = this.game.world.radiusFor(creature.mass);
+      this.particles.burst(creature.pos, creature.hue, 60, 420, r * 0.3);
+      const color = `hsl(${String(creature.hue)} 90% 70%)`;
+      this.ring(creature, creature.pos, r, color, 0.7, 6);
+      this.ring(creature, creature.pos, r, '#ffffff', 0.9, 3);
+      this.flash = { alpha: 0.4, color: '#ffffff' };
+      this.shakeScreen(6, 0.3);
     });
   }
-
-  private pulse = 0;
 
   resize(): void {
     this.dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -79,17 +132,59 @@ export class Renderer {
     this.canvas.width = Math.floor(w * this.dpr);
     this.canvas.height = Math.floor(h * this.dpr);
     this.camera.resize(w, h);
+    const v = this.ctx.createRadialGradient(
+      w / 2,
+      h / 2,
+      Math.min(w, h) * 0.35,
+      w / 2,
+      h / 2,
+      Math.max(w, h) * 0.75,
+    );
+    v.addColorStop(0, 'rgba(0,0,0,0)');
+    v.addColorStop(1, 'rgba(0,0,0,0.45)');
+    this.vignette = v;
   }
 
   screenToWorld(p: Vec2): Vec2 {
     return this.camera.screenToWorld(p);
   }
 
+  /** Nudge the camera; strength in screen pixels, decaying over `duration` seconds. */
+  shakeScreen(amplitude: number, duration: number): void {
+    if (amplitude < this.shake.amplitude * (1 - this.shake.time / this.shake.duration)) return;
+    this.shake = { time: 0, duration, amplitude };
+  }
+
+  private float(at: Vec2, text: string, color: string, life = 0.9): void {
+    this.texts.push({ pos: { x: at.x, y: at.y }, text, color, life, maxLife: life });
+  }
+
+  private ring(
+    follow: Creature | null,
+    at: Vec2,
+    radius: number,
+    color: string,
+    life: number,
+    width: number,
+  ): void {
+    this.rings.push({
+      follow,
+      pos: { x: at.x, y: at.y },
+      radius,
+      color,
+      life,
+      maxLife: life,
+      width,
+    });
+  }
+
   update(dt: number): void {
     const world = this.game.world;
     const p = world.player;
+    const punchZoom = 1 - this.punch * 0.05;
     if (p?.alive) {
-      this.camera.follow(p.pos, p.mass, dt, false, world.isBoosting(p) ? BOOST_ZOOM_KICK : 1);
+      const kick = (world.isBoosting(p) ? BOOST_ZOOM_KICK : 1) * punchZoom;
+      this.camera.follow(p.pos, p.mass, dt, false, kick);
     } else if (p) {
       // Kill cam: watch the killer, but keep the zoom you died with. Following a giant's zoom
       // would pull the camera out over the whole arena and redraw every orb each frame.
@@ -102,6 +197,26 @@ export class Renderer {
     this.emitBoostTrails(dt);
     this.particles.update(dt);
     this.pulse = Math.max(0, this.pulse - dt * 1.5);
+    this.punch = Math.max(0, this.punch - dt * 4);
+    this.shake.time += dt;
+    this.flash.alpha = Math.max(0, this.flash.alpha - dt * 1.6);
+    for (let i = this.texts.length - 1; i >= 0; i--) {
+      const ft = this.texts[i];
+      if (!ft) continue;
+      ft.life -= dt;
+      ft.pos.y -= 55 * dt;
+      if (ft.life <= 0) this.texts.splice(i, 1);
+    }
+    for (let i = this.rings.length - 1; i >= 0; i--) {
+      const ring = this.rings[i];
+      if (!ring) continue;
+      ring.life -= dt;
+      if (ring.follow?.alive) {
+        ring.pos.x = ring.follow.pos.x;
+        ring.pos.y = ring.follow.pos.y;
+      }
+      if (ring.life <= 0) this.rings.splice(i, 1);
+    }
   }
 
   private trailAcc = 0;
@@ -142,11 +257,34 @@ export class Renderer {
     ctx.fillStyle = BG;
     ctx.fillRect(0, 0, cam.width, cam.height);
 
+    // Screen shake: offset everything drawn in world space, not the HUD.
+    const sh = this.shake;
+    if (sh.time < sh.duration) {
+      const k = sh.amplitude * (1 - sh.time / sh.duration);
+      const tm = this.game.world.time + sh.time;
+      ctx.translate(Math.sin(tm * 61) * k, Math.cos(tm * 47) * k);
+    }
+
+    this.drawNebula();
     this.drawGrid();
-    this.drawArenaWall();
+    this.drawArena();
     this.drawOrbs();
     this.drawCreatures();
+    this.drawRings();
     this.particles.draw(ctx, (p) => cam.worldToScreen(p), cam.scale);
+    this.drawTexts();
+
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.vignette) {
+      ctx.fillStyle = this.vignette;
+      ctx.fillRect(0, 0, cam.width, cam.height);
+    }
+    if (this.flash.alpha > 0) {
+      ctx.globalAlpha = this.flash.alpha;
+      ctx.fillStyle = this.flash.color;
+      ctx.fillRect(0, 0, cam.width, cam.height);
+      ctx.globalAlpha = 1;
+    }
   }
 
   private isVisible(p: Vec2): boolean {
@@ -154,10 +292,74 @@ export class Renderer {
     return Math.abs(p.x - this.camera.pos.x) < half.x && Math.abs(p.y - this.camera.pos.y) < half.y;
   }
 
+  /**
+   * One repeating tile of soft coloured clouds and tiny drifting specks, drawn once.
+   * Blobs near an edge are drawn again on the opposite side so the tile wraps seamlessly.
+   */
+  private makeNebula(): CanvasPattern | null {
+    const size = 512; // pixels per tile; scaled to TILE world units when drawn
+    const tile = document.createElement('canvas');
+    tile.width = size;
+    tile.height = size;
+    const c = tile.getContext('2d');
+    if (!c) return null;
+    const rng = this.game.world.rng;
+    const palette = [
+      [240, 70, 55],
+      [195, 80, 50],
+      [300, 60, 50],
+      [160, 70, 45],
+      [220, 80, 60],
+    ];
+    for (let i = 0; i < 9; i++) {
+      const x = rng.range(0, size);
+      const y = rng.range(0, size);
+      const r = rng.range(90, 200);
+      const [h, s, l] = palette[i % palette.length] ?? [240, 70, 55];
+      const a = rng.range(0.07, 0.13);
+      for (const ox of [-size, 0, size]) {
+        for (const oy of [-size, 0, size]) {
+          const g = c.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+          g.addColorStop(0, `hsla(${String(h)}, ${String(s)}%, ${String(l)}%, ${String(a)})`);
+          g.addColorStop(1, `hsla(${String(h)}, ${String(s)}%, ${String(l)}%, 0)`);
+          c.fillStyle = g;
+          c.fillRect(x + ox - r, y + oy - r, r * 2, r * 2);
+        }
+      }
+    }
+    // Specks of plankton: far away, so they stay small and soft.
+    for (let i = 0; i < 110; i++) {
+      const x = rng.range(0, size);
+      const y = rng.range(0, size);
+      c.globalAlpha = rng.range(0.15, 0.5);
+      c.fillStyle = rng.chance(0.3) ? '#9fe8ff' : '#ffffff';
+      c.beginPath();
+      c.arc(x, y, rng.range(0.6, 1.8), 0, Math.PI * 2);
+      c.fill();
+    }
+    c.globalAlpha = 1;
+    return this.ctx.createPattern(tile, 'repeat');
+  }
+
+  private drawNebula(): void {
+    if (!this.nebula) return;
+    const ctx = this.ctx;
+    const cam = this.camera;
+    const k = (cam.scale * TILE) / 512;
+    const tx = cam.width / 2 - cam.pos.x * PARALLAX * cam.scale;
+    const ty = cam.height / 2 - cam.pos.y * PARALLAX * cam.scale;
+    ctx.save();
+    ctx.translate(tx, ty);
+    ctx.scale(k, k);
+    ctx.fillStyle = this.nebula;
+    ctx.fillRect(-tx / k, -ty / k, cam.width / k, cam.height / k);
+    ctx.restore();
+  }
+
   private drawGrid(): void {
     const ctx = this.ctx;
     const cam = this.camera;
-    const step = 120;
+    const step = 140;
     const s = cam.scale;
     const half = cam.visibleHalf(0);
     const x0 = Math.floor((cam.pos.x - half.x) / step) * step;
@@ -178,15 +380,33 @@ export class Renderer {
     ctx.stroke();
   }
 
-  private drawArenaWall(): void {
+  /** Darkens everything beyond the wall and draws the wall as a soft red glow band. */
+  private drawArena(): void {
     const ctx = this.ctx;
-    const c = this.camera.worldToScreen({ x: 0, y: 0 });
-    const r = CONFIG.arena.radius * this.camera.scale;
-    ctx.strokeStyle = WALL;
-    ctx.lineWidth = Math.max(2, 10 * this.camera.scale);
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
-    ctx.stroke();
+    const cam = this.camera;
+    const c = cam.worldToScreen({ x: 0, y: 0 });
+    const r = CONFIG.arena.radius * cam.scale;
+    // Skip the outside fill when the wall is nowhere near the screen.
+    const corner = Math.hypot(cam.width, cam.height);
+    if (Math.hypot(c.x - cam.width / 2, c.y - cam.height / 2) + corner > r) {
+      ctx.fillStyle = 'rgba(2, 4, 12, 0.6)';
+      ctx.beginPath();
+      ctx.rect(0, 0, cam.width, cam.height);
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2, true);
+      ctx.fill('evenodd');
+      const bands: [number, number][] = [
+        [34, 0.08],
+        [16, 0.18],
+        [6, 0.7],
+      ];
+      for (const [w, a] of bands) {
+        ctx.strokeStyle = `rgba(255, 80, 120, ${String(a)})`;
+        ctx.lineWidth = Math.max(2, w * cam.scale);
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
   }
 
   private drawOrbs(): void {
@@ -194,22 +414,36 @@ export class Renderer {
     const cam = this.camera;
     const s = cam.scale;
     const half = cam.visibleHalf(20);
-    // One path per colour bucket: ~12 fill calls per frame instead of one per orb.
-    const paths: Path2D[] = [];
+    const time = this.game.world.time;
+    // One path per colour bucket: a soft glow pass and a core pass, ~24 fills per frame.
+    const cores: Path2D[] = [];
+    const glows: Path2D[] = [];
     for (const orb of this.game.world.orbs) {
       if (!orb.alive) continue;
       if (Math.abs(orb.pos.x - cam.pos.x) > half.x || Math.abs(orb.pos.y - cam.pos.y) > half.y) {
         continue;
       }
       const bucket = Math.floor(((orb.hue % 360) / 360) * ORB_HUE_BUCKETS);
-      const path = (paths[bucket] ??= new Path2D());
+      const core = (cores[bucket] ??= new Path2D());
+      const glow = (glows[bucket] ??= new Path2D());
       const p = cam.worldToScreen(orb.pos);
-      const r = Math.max(1.5, orb.radius * s);
-      path.moveTo(p.x + r, p.y);
-      path.arc(p.x, p.y, r, 0, Math.PI * 2);
+      // Gentle pulse, each orb on its own phase, so the food looks alive.
+      const pulse = 1 + 0.1 * Math.sin(time * 2.6 + orb.id * 0.9);
+      const r = Math.max(1.5, orb.radius * s * pulse);
+      core.moveTo(p.x + r, p.y);
+      core.arc(p.x, p.y, r, 0, Math.PI * 2);
+      const g = r * 2.3;
+      glow.moveTo(p.x + g, p.y);
+      glow.arc(p.x, p.y, g, 0, Math.PI * 2);
     }
-    paths.forEach((path, bucket) => {
-      ctx.fillStyle = `hsl(${String((bucket * 360) / ORB_HUE_BUCKETS)} 85% 62%)`;
+    ctx.globalAlpha = 0.16;
+    glows.forEach((path, bucket) => {
+      ctx.fillStyle = `hsl(${String((bucket * 360) / ORB_HUE_BUCKETS)} 90% 65%)`;
+      ctx.fill(path);
+    });
+    ctx.globalAlpha = 1;
+    cores.forEach((path, bucket) => {
+      ctx.fillStyle = `hsl(${String((bucket * 360) / ORB_HUE_BUCKETS)} 85% 66%)`;
       ctx.fill(path);
     });
   }
@@ -253,8 +487,8 @@ export class Renderer {
     const s = cam.scale;
     const p = cam.worldToScreen(c.pos);
     const r = world.radiusFor(c.mass) * s;
-    // Spawn protection shimmer.
-    const invuln = c.invulnUntil > world.time;
+    const shieldLeft = c.invulnUntil - world.time;
+    const chomp = Math.max(0, 1 - (world.time - c.lastAteAt) / 0.3);
 
     drawCreatureArt(ctx, {
       x: p.x,
@@ -269,16 +503,38 @@ export class Renderer {
       threat: relation === 'threat',
       magnetPx: c.stats.magnetRadius * s,
       self: relation === 'self',
+      phase: c.id,
+      mood: relation === 'threat' ? 'hungry' : relation === 'prey' ? 'scared' : 'neutral',
+      chomp,
     });
 
-    if (invuln) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r + 6, world.time * 3, world.time * 3 + Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
+    if (shieldLeft > 0) {
+      // Spawn shield: a soft bubble, blinking faster as it runs out.
+      const fading = shieldLeft < 2 && Math.sin(world.time * 14) < 0;
+      if (!fading) {
+        const br = r + Math.max(5, r * 0.22);
+        ctx.fillStyle = 'rgba(120, 220, 255, 0.12)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, br, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(160, 230, 255, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 7]);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, br, world.time * 2, world.time * 2 + Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      if (relation === 'self') {
+        this.label(
+          p.x,
+          p.y - r - 24,
+          t('arena.shield', { s: Math.ceil(shieldLeft) }),
+          '#a0e6ff',
+          13,
+          true,
+        );
+      }
     }
 
     if (isRevenge) {
@@ -304,6 +560,36 @@ export class Renderer {
     }
   }
 
+  private drawRings(): void {
+    const ctx = this.ctx;
+    const cam = this.camera;
+    for (const ring of this.rings) {
+      const k = 1 - ring.life / ring.maxLife;
+      const p = cam.worldToScreen(ring.pos);
+      const r = ring.radius * cam.scale * (1 + k * 2.2);
+      ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.strokeStyle = ring.color;
+      ctx.lineWidth = Math.max(1.5, ring.width * (1 - k));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  private drawTexts(): void {
+    const ctx = this.ctx;
+    const cam = this.camera;
+    for (const ft of this.texts) {
+      const k = ft.life / ft.maxLife;
+      const p = cam.worldToScreen(ft.pos);
+      ctx.globalAlpha = Math.min(1, k * 2);
+      const size = 18 + (1 - k) * 4;
+      this.label(p.x, p.y - 20, ft.text, ft.color, size, true);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   private label(
     x: number,
     y: number,
@@ -313,7 +599,7 @@ export class Renderer {
     bold: boolean,
   ): void {
     const ctx = this.ctx;
-    ctx.font = `${bold ? '700' : '500'} ${String(size)}px system-ui, -apple-system, Segoe UI, Roboto, sans-serif`;
+    ctx.font = `${bold ? '800' : '600'} ${String(size)}px ${FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = 3;
