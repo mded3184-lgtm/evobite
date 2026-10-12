@@ -281,7 +281,7 @@ async function boot(): Promise<void> {
 
   // Dev-only handle for debugging and browser smoke tests; stripped from production builds.
   if (import.meta.env.DEV) {
-    Object.assign(window, { evobite: game, evobiteRenderer: renderer });
+    Object.assign(window, { evobite: game, evobiteRenderer: renderer, evobiteLoop: loop });
   }
 
   // iOS Safari ignores user-scalable=no; block pinch-zoom gestures so the game never zooms.

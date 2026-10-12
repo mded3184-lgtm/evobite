@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>EvoBite cover</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0b1020;
+      }
+      #scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .title {
+        position: absolute;
+        margin: 0;
+        font-family: 'Nunito Variable', sans-serif;
+        font-weight: 900;
+        line-height: 0.88;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+      .title span {
+        display: inline-block;
+        paint-order: stroke fill;
+        -webkit-text-stroke: 0.11em #0a0f1f;
+        text-shadow:
+          0 0.07em 0 #0a0f1f,
+          0 0.16em 0.3em rgba(0, 0, 0, 0.55);
+      }
+      .title .evo {
+        color: #ffffff;
+      }
+      .title.stack {
+        text-align: center;
+      }
+      .title.stack span {
+        display: block;
+      }
+      .title.stack .bite {
+        margin-left: 0;
+      }
+      .title .bite {
+        color: #35e0a1;
+        margin-left: 0.04em;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <h1 class="title"><span class="evo">EVO</span><span class="bite">BITE</span></h1>
+    <script type="module" src="./cover.ts"></script>
+  </body>
+</html>

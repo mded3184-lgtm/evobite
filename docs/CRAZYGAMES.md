@@ -1,33 +1,55 @@
 # CrazyGames submission checklist
 
-Source: https://docs.crazygames.com/requirements/
+Sources: <https://docs.crazygames.com/requirements/> (gameplay, quality, technical, ads, SDK v3, and the cover and video guidelines). Store texts are in [crazygames/listing.md](crazygames/listing.md).
 
-## Gameplay requirements
+## Gameplay
 
-- [x] Immediate entry into gameplay: one click ("Play") from load.
-- [x] PEGI 12 compliant: abstract creatures, no blood, no text chat.
-- [x] Playable with mouse and with one finger on touch screens.
-- [x] Works in an iframe: relative `base: './'`, no top-level navigation, no popups.
-- [x] No external links or branding other than the SDK.
+- [x] One click from load into gameplay (Play in the lobby; Enter also works).
+- [x] PEGI 12: abstract cartoon creatures, no blood, no chat, no user content.
+- [x] English is the default language. 11 locales are available; the language follows the browser and can be switched in the lobby.
+- [x] Readable at DPR 1 in every CrazyGames iframe size: 800×450, 821×462, 907×510, 1077×606, 1080×607, 1216×684, 1280×720, 1366×768, 1536×864 and 1920×1080. Checked with Playwright: the lobby fits, the HUD doesn't overlap, and the smallest text is ≥ 10 px.
+- [x] Same physics on 30/60/144 Hz screens: fixed 60 Hz simulation step.
+- [x] No custom fullscreen button, no external links, no other branding.
+- [x] Escape isn't used by the game, because it exits fullscreen. Pause is on **P**, and the game also pauses itself when the tab is hidden.
 
-## Quality requirements
+## Mobile
 
-- [x] Unique name and icon (not confusable with Hole.io / Holey.io / Mope.io).
-- [x] Responsive layout from 360 px wide up to 4K; canvas scales with devicePixelRatio ≤ 2.
-- [x] No console errors on load (`npm run build && npm run preview`).
-- [ ] 16:9 cover (1920×1080), square icon (512×512), 3 screenshots, 10–20 s gameplay video.
+- [x] Touch: fixed joystick and a boost button. Mouse and keyboard work at the same time.
+- [x] Portrait and landscape, from 360 px wide. Checked on 7 phone and tablet profiles in both orientations.
+- [x] No pinch-zoom or accidental page scroll.
 
-## Technical requirements
+## Technical
 
-- [x] Initial download ≤ 50 MB (actual: ~50 KB).
-- [x] Total ≤ 250 MB, ≤ 1500 files.
-- [x] SDK v3 loaded from `https://sdk.crazygames.com/crazygames-sdk-v3.js`.
-- [x] `gameplayStart()` / `gameplayStop()` on round start / death.
-- [x] `happytime()` on evolution and revenge kills.
-- [x] Midgame ad requested on respawn, with `adError` treated as finished.
-- [x] Progress stored through the data module, falling back to `localStorage`.
-- [x] Sound muted while an ad plays, and when the tab is hidden.
-- [x] `gameplayStop()` / `gameplayStart()` on pause and resume.
+- [x] Initial download ≈ 0.3 MB in 8 files (limits: 50 MB, and 20 MB for the mobile homepage).
+- [x] Relative paths (`base: './'`), works inside an iframe.
+- [x] Tested in Chromium (Chrome/Edge). Only standard Canvas 2D and Web Audio APIs are used, nothing browser-specific.
+- [x] SDK v3 loaded synchronously in `<head>`. The SDK is skipped when `environment === 'disabled'`.
+- [x] `loadingStart()` / `loadingStop()` around boot. Loading stops once the fonts are in and the lobby is interactive.
+- [x] `gameplayStart()` / `gameplayStop()` on round start, death, pause/resume and around ads.
+- [x] `happytime()` on evolutions and revenge kills.
+- [x] Progress is saved through the SDK data module, with `localStorage` as the fallback.
+- [x] Every SDK call is guarded, so an SDK error can never freeze the game.
+
+## Ads
+
+- [x] Midgame ads only at a natural break (respawn after death), never during play.
+- [x] No ad in the first 3 minutes of play. The SDK also caps midgame ads at one every 3 minutes.
+- [x] Sound is muted on `adStarted`, not when the ad is requested, and comes back afterwards.
+- [x] The game is paused for the ad. `adError` or a missing ad never blocks: there's a 4 s start timeout and a 45 s hard cap.
+- [x] No rewarded ads yet. Possible later addition: "watch an ad to keep 50% of your mass".
+
+## Store assets
+
+- [x] Covers: landscape 1920×1080, portrait 800×1200 and square 800×800. They show the main character and the game name only: no "Play" button, no frames, no screenshots.
+- [x] Trailers: landscape 1920×1080 and portrait 1080×1620, 18 s, H.264, silent, under 10 MB each. The first frame is the cover. There is no cursor, text overlay or speed-up.
+
+## Manual steps in the developer portal
+
+1. Upload `evobite-crazygames.zip`, with `index.html` at the root.
+2. Open the portal's preview/QA tool and check that the SDK works on the real domain (`environment` should be `crazygames`). This includes the ad flow after 3 minutes.
+3. Set orientation to "both" and mark the game as mobile-friendly.
+4. Choose category and tags from the listing. Don't choose .io or Multiplayer.
+5. Upload the 3 covers and 2 trailers, then paste the description and controls.
 
 ## Basic Launch metrics to watch (2 weeks)
 

@@ -150,6 +150,18 @@ describe('CrazyGames adapter never blocks the game', () => {
 });
 
 describe('GameLoop', () => {
+  it('advance() runs fixed steps for the given time and renders once', () => {
+    let updates = 0;
+    let renders = 0;
+    const loop = new GameLoop({
+      update: () => updates++,
+      render: () => renders++,
+    });
+    for (let i = 0; i < 30; i++) loop.advance(1 / 30);
+    expect(updates).toBe(60);
+    expect(renders).toBe(30);
+  });
+
   it('keeps running after a frame throws', () => {
     const queue: ((t: number) => void)[] = [];
     g.requestAnimationFrame = (cb: (t: number) => void) => queue.push(cb);

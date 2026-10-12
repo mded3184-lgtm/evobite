@@ -31,6 +31,19 @@ export class GameLoop {
     cancelAnimationFrame(this.rafId);
   }
 
+  /**
+   * Step the simulation by a fixed amount of time and draw one frame, independent of
+   * requestAnimationFrame. Used (with the loop stopped) to record frame-perfect trailers.
+   */
+  advance(seconds: number): void {
+    this.accumulator += seconds;
+    while (this.accumulator >= GameLoop.STEP - 1e-9) {
+      this.callbacks.update(GameLoop.STEP);
+      this.accumulator -= GameLoop.STEP;
+    }
+    this.callbacks.render(Math.max(0, this.accumulator) / GameLoop.STEP);
+  }
+
   private lastErrorAt = -Infinity;
 
   private readonly frame = (now: number): void => {
