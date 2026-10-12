@@ -948,16 +948,19 @@ select {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /* One knob for the whole in-game HUD: ~19px on a 1366x768 laptop, ~26px on 1920x1080.
+     Every HUD size below is in em, so it all scales together. Phones override with px. */
+  font-size: clamp(16px, 1.05vw + 0.6vh, 26px);
 }
 .hud-left {
   position: absolute;
-  left: 14px;
-  top: 12px;
+  left: 0.9em;
+  top: 0.7em;
 }
 .hud-right {
   position: absolute;
-  right: 14px;
-  top: 12px;
+  right: 0.9em;
+  top: 0.7em;
   text-align: right;
 }
 .hud-mass {
@@ -966,30 +969,31 @@ select {
   gap: 6px;
 }
 .hud-mass-value {
-  font-size: 36px;
+  font-size: 2.3em;
   font-weight: 900;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
   paint-order: stroke fill;
-  -webkit-text-stroke: 5px var(--ink);
+  -webkit-text-stroke: 0.14em var(--ink);
 }
 .hud-mass-unit {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.72em;
   font-weight: 800;
 }
 .hud-form {
   color: var(--mint);
   font-weight: 900;
-  font-size: 15px;
-  margin-bottom: 6px;
+  font-size: 0.95em;
+  margin-bottom: 0.35em;
   paint-order: stroke fill;
   -webkit-text-stroke: 3px var(--ink);
 }
 .hud-bar {
   position: relative;
-  width: 190px;
-  height: 18px;
-  border-radius: 9px;
+  width: 12.5em;
+  height: 1.15em;
+  border-radius: 0.6em;
   background: var(--ink);
   border: 2px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
@@ -1002,42 +1006,42 @@ select {
 .hud-bar-label {
   position: absolute;
   inset: 0;
-  font-size: 10.5px;
+  display: grid;
+  place-items: center;
+  font-size: 0.62em;
   font-weight: 900;
-  line-height: 14px;
-  text-align: center;
   color: #fff;
   text-shadow: 0 1px 2px #000;
 }
 
 .hud-rank {
-  font-size: 15px;
+  font-size: 0.95em;
   font-weight: 900;
   color: var(--muted);
-  margin-bottom: 4px;
+  margin-bottom: 0.3em;
 }
 .hud-board {
   list-style: none;
   margin: 0;
-  padding: 8px 12px;
+  padding: 0.5em 0.75em;
   background: rgba(10, 15, 31, 0.72);
   border: 2px solid var(--line);
-  border-radius: var(--r-sm);
-  min-width: 160px;
+  border-radius: 0.75em;
+  width: 12em;
 }
 .hud-board li {
   display: flex;
-  gap: 6px;
-  font-size: 13px;
+  gap: 0.4em;
+  font-size: 0.85em;
   font-weight: 800;
-  line-height: 21px;
+  line-height: 1.6;
 }
 .hud-board li.me {
   color: var(--mint);
 }
 .hud-board .n {
   color: var(--muted);
-  width: 18px;
+  width: 1.4em;
 }
 .hud-board .name {
   flex: 1;
@@ -1056,11 +1060,12 @@ select {
   left: 50%;
   top: 18%;
   transform: translate(-50%, -8px);
-  padding: 9px 18px;
+  padding: 0.5em 1.1em;
   border-radius: 999px;
   background: var(--panel);
   border: 2px solid var(--line);
   box-shadow: 0 4px 0 var(--ink);
+  font-size: 1.05em;
   font-weight: 900;
   opacity: 0;
   transition:
@@ -1081,22 +1086,22 @@ select {
 .hud-controls {
   position: absolute;
   left: 50%;
-  top: 10px;
+  top: 0.6em;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 0.45em;
 }
 .hud-btn {
   pointer-events: auto;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
+  width: 2.6em;
+  height: 2.6em;
+  border-radius: 0.75em;
   border: 2px solid var(--line);
   background: rgba(21, 28, 53, 0.85);
   color: var(--text);
-  font-size: 15px;
+  font-size: 1em;
   cursor: pointer;
   box-shadow: 0 4px 0 var(--ink);
 }
@@ -1108,29 +1113,29 @@ select {
 /* Build strip */
 .hud-build {
   position: absolute;
-  left: 14px;
-  bottom: 14px;
+  left: 0.9em;
+  bottom: 0.9em;
   display: flex;
-  gap: 6px;
+  gap: 0.4em;
   flex-wrap: wrap;
-  max-width: calc(100% - 28px);
+  max-width: calc(100% - 1.8em);
 }
 .chip {
   display: flex;
   flex-direction: column;
-  min-width: 84px;
-  padding: 6px 10px;
-  border-radius: var(--r-sm);
+  min-width: 6.2em;
+  padding: 0.4em 0.65em;
+  border-radius: 0.75em;
   background: rgba(10, 15, 31, 0.8);
   border: 2px solid var(--line);
   line-height: 1.2;
 }
 .chip b {
-  font-size: 13px;
+  font-size: 0.85em;
   font-weight: 900;
 }
 .chip span {
-  font-size: 11px;
+  font-size: 0.7em;
   font-weight: 700;
   color: var(--muted);
 }
@@ -1938,6 +1943,9 @@ body {
 
 /* Portrait phones */
 @media (max-width: 520px) {
+  .hud {
+    font-size: 14px;
+  }
   :root {
     --ctl: 112px;
     --knob: 48px;
@@ -1949,23 +1957,22 @@ body {
     top: 10px;
   }
   .hud-mass-value {
-    font-size: 24px;
+    font-size: 28px;
   }
   .hud-mass-unit {
-    font-size: 11px;
+    font-size: 12px;
   }
   .hud-form {
-    font-size: 12px;
+    font-size: 13px;
     margin-bottom: 4px;
   }
   .hud-bar {
-    width: 118px;
-    height: 14px;
+    width: 130px;
+    height: 16px;
     border-width: 1.5px;
   }
   .hud-bar-label {
-    font-size: 8.5px;
-    line-height: 11px;
+    font-size: 9px;
   }
   .hud-controls {
     right: 12px;
@@ -1973,9 +1980,9 @@ body {
     gap: 6px;
   }
   .hud-btn {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
   }
   .hud-btn .icon {
     width: 16px;
@@ -1983,21 +1990,21 @@ body {
   }
   .hud-right {
     right: 12px;
-    top: 52px;
+    top: 54px;
   }
   .hud-rank {
-    font-size: 11px;
+    font-size: 12px;
     margin-bottom: 3px;
   }
   .hud-board {
     min-width: 0;
-    width: 124px;
-    padding: 5px 8px;
+    width: 136px;
+    padding: 6px 9px;
     border-width: 1.5px;
   }
   .hud-board li {
-    font-size: 11px;
-    line-height: 16px;
+    font-size: 12px;
+    line-height: 18px;
     gap: 4px;
   }
   .hud-board .n {
@@ -2014,10 +2021,10 @@ body {
     border-width: 1.5px;
   }
   .hud-build .chip b {
-    font-size: 11px;
+    font-size: 11.5px;
   }
   .hud-build .chip span {
-    font-size: 9px;
+    font-size: 9.5px;
   }
   .hud-toast {
     font-size: 13px;
@@ -2033,12 +2040,15 @@ body {
     --boost: 70px;
   }
   .hud-board {
-    width: 112px;
+    width: 120px;
   }
 }
 
 /* Landscape phones: controls in the two bottom corners, build strip between them. */
 @media (max-height: 500px) and (orientation: landscape) {
+  .hud {
+    font-size: 14px;
+  }
   :root {
     --ctl: 108px;
     --knob: 46px;
@@ -2051,7 +2061,7 @@ body {
     top: 8px;
   }
   .hud-mass-value {
-    font-size: 22px;
+    font-size: 25px;
   }
   .hud-form {
     font-size: 12px;
@@ -2080,12 +2090,12 @@ body {
   }
   .hud-board {
     min-width: 0;
-    width: 124px;
+    width: 132px;
     padding: 5px 8px;
   }
   .hud-board li {
-    font-size: 11px;
-    line-height: 16px;
+    font-size: 11.5px;
+    line-height: 17px;
   }
   .hud-build {
     left: calc(var(--edge) + var(--ctl) + 14px);
