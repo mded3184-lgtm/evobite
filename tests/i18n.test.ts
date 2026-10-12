@@ -71,9 +71,9 @@ describe('perk text', () => {
   it('reads numbers from the live perk data in every language', () => {
     for (const { code } of LANGUAGES) {
       setLanguage(code);
-      const p18 = pct(0.18);
-      expect(branchBlurb('swift'), code).toContain(p18);
-      expect(branchShort('swift'), code).toContain(p18);
+      const p15 = pct(0.15);
+      expect(branchBlurb('swift'), code).toContain(p15);
+      expect(branchShort('swift'), code).toContain(p15);
       expect(branchBlurb('armor'), code).toContain(pct(0.5));
       expect(branchShort('hunter'), code).toContain(pct(0.08));
       expect(branchBlurb('titan'), code).toContain(pct(0.4));

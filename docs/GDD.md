@@ -44,8 +44,8 @@ away from a predator that is right on them, and aggressive bots lunge at prey in
 Numbers come from `npm run balance`: a headless simulator that locks bots to each of the 16
 builds evenly and runs many seeds. It reports average mass, kills and deaths per minute per
 build and per perk pair. Target: every pair within ±10–15% of its partner (seed noise alone is
-about ±10%). Latest run (16 seeds × 6 min): Swift +9 / Bulk −9, Venom −6 / Armor +6,
-Hunter −2 / Grazer +2, Apex +8 / Titan −8. Best build is 1.5× the worst (it was 16× before).
+about ±10%). Latest run (16 seeds × 6 min): Swift −2 / Bulk +2, Venom +9 / Armor −8, Hunter +3 / Grazer −3,
+Apex +1 / Titan −1.
 
 ## Rules that keep the arena honest
 
@@ -53,8 +53,10 @@ Hunter −2 / Grazer +2, Apex +8 / Titan −8. Best build is 1.5× the worst (it
   prey's centre must be inside the attacker's body by 40% of the prey's radius. No edge-touch
   deaths, but prey doesn't have to be fully swallowed either.
 - **Spawn protection**: 2 seconds, prevents being eaten, not eating.
-- **Decay**: above 120 mass, 2%/s of the excess is lost, multiplied by `1 + mass / 1200` so giants
-  bleed faster (Titan: 60% of that). Largest creatures settle around 1300–2600 mass.
+- **Decay**: none up to mass 300 (so the first three evolutions never fight it). Above that,
+  1%/s of the excess, multiplied by `1 + (mass / 1000)²`: about 2 mass/s at 480, 14/s at 1000,
+  85/s at 2000 (Titan: 60% of that). Gentle for players, steep for giants, which settle around
+  2500–3200 mass.
 - **Speed**: `420 / mass^0.15`, so a hatchling is ~1.5× faster than a 480-mass giant.
 - **Elite bots**: 15% of respawns arrive at 120–380 mass so there is always something to fear
   and something worth hunting.

@@ -28,10 +28,13 @@ export const CONFIG = {
     /** Mass retained from eaten creature (rest is "lost" to keep the curve sane). */
     absorbFraction: 0.8,
     /** Mass lost per second as a fraction, applied above decayStartMass. */
-    decayRate: 0.02,
-    decayStartMass: 120,
-    /** Decay speeds up with size: rate x (1 + mass / decaySoftCap). Stops runaway giants. */
-    decaySoftCap: 1200,
+    decayRate: 0.01,
+    decayStartMass: 300,
+    /**
+     * Decay speeds up with size: rate x (1 + (mass / decaySoftCap)^2). Barely noticeable at
+     * normal sizes, very steep for giants, so nobody grows to fill the arena.
+     */
+    decaySoftCap: 1000,
   },
   orbs: {
     count: 1100,

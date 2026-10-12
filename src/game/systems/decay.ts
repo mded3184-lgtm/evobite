@@ -12,7 +12,7 @@ export function decaySystem(world: World, dt: number): void {
     if (world.paused && c.kind === 'player') continue;
     const excess = c.mass - decayStartMass;
     // Soft cap: giants bleed faster, so nobody can grow to fill the arena.
-    const sizeFactor = 1 + c.mass / decaySoftCap;
+    const sizeFactor = 1 + (c.mass / decaySoftCap) ** 2;
     c.mass -= excess * decayRate * sizeFactor * c.stats.decayMult * dt;
   }
 }

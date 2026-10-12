@@ -25,7 +25,7 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Swift',
     blurb: 'Move 18% faster. Catch prey, escape anything.',
     tags: ['+speed'],
-    patch: { speedMult: 0.18 },
+    patch: { speedMult: 0.15 },
   },
   bulk: {
     id: 'bulk',
@@ -33,7 +33,7 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Bulk',
     blurb: 'Orbs give 28% more mass. Grow fat, grow fast.',
     tags: ['+food', '+absorb'],
-    patch: { foodMult: 0.28, speedMult: -0.03, absorbMult: 0.1 },
+    patch: { foodMult: 0.3, speedMult: -0.03, absorbMult: 0.1 },
   },
   venom: {
     id: 'venom',

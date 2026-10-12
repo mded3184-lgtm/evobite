@@ -70,7 +70,7 @@ describe('derived stats', () => {
 
   it('stacks additive multipliers and keeps the strongest ratio perks', () => {
     const s = statsForPath(['swift', 'armor', 'hunter', 'apex']);
-    expect(s.speedMult).toBeCloseTo(1.33);
+    expect(s.speedMult).toBeCloseTo(1.3);
     expect(s.eatRatio).toBe(1.05); // apex beats hunter's 1.12 and base 1.18
     expect(s.beEatenRatio).toBe(1.5);
     expect(s.venomResist).toBe(0.7);

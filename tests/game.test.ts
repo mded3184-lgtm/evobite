@@ -61,7 +61,7 @@ describe('Game', () => {
     game.chooseBranch('swift');
     expect(game.world.paused).toBe(false);
     expect(player.path).toEqual(['swift']);
-    expect(player.stats.speedMult).toBeCloseTo(1.18);
+    expect(player.stats.speedMult).toBeCloseTo(1.15);
     game.update(DT);
     expect(player.pos).not.toEqual(pos);
   });
