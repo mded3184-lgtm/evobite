@@ -35,6 +35,9 @@ export class MockSdk implements PlatformSdk {
   happyTime(): void {
     /* noop */
   }
+  onAudioMuteChange(listener: (muted: boolean) => void): void {
+    listener(false);
+  }
   async showMidgameAd(): Promise<void> {
     /* no ads outside the platform */
   }

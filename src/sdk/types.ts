@@ -17,6 +17,11 @@ export interface PlatformSdk {
   /** Persisted key/value storage; cloud-backed on CrazyGames when the player is logged in. */
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  /**
+   * Platform-level audio mute (CrazyGames lets players mute games from the site).
+   * Calls back once with the current state, then on every change.
+   */
+  onAudioMuteChange(listener: (muted: boolean) => void): void;
   /** Invite link / share support, if the platform offers it. */
   canShare(): boolean;
   share(): void;

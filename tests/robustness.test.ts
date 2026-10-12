@@ -112,6 +112,21 @@ describe('CrazyGames adapter never blocks the game', () => {
     expect(game.loadingStop).toHaveBeenCalledOnce();
   });
 
+  it('follows the platform audio mute setting', async () => {
+    const sdk = fakeSdk({ requestAd: () => undefined });
+    const game = sdk.game as Record<string, unknown>;
+    let notify: ((s: { muteAudio?: boolean }) => void) | null = null;
+    game.settings = { muteAudio: true };
+    game.addSettingsChangeListener = (l: (s: { muteAudio?: boolean }) => void) => {
+      notify = l;
+    };
+    const a = await adapterWith(sdk);
+    const seen: boolean[] = [];
+    a.onAudioMuteChange((m) => seen.push(m));
+    (notify as ((s: { muteAudio?: boolean }) => void) | null)?.({ muteAudio: false });
+    expect(seen).toEqual([true, false]);
+  });
+
   it('resolves immediately when requestAd throws', async () => {
     const a = await adapterWith(
       fakeSdk({

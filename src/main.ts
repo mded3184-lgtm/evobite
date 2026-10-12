@@ -38,6 +38,9 @@ async function boot(): Promise<void> {
   const keyboard = new Keyboard();
   const isTouch = window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
   const sfx = new Sfx(sdk.getItem(MUTE_KEY) === '1');
+  sdk.onAudioMuteChange((muted) => {
+    sfx.setPlatformMuted(muted);
+  });
   let progress: Progress = loadProgress(sdk);
   game.playerSkin = progress.selectedSkin;
   const savedName = sdk.getItem('evobite.name') ?? '';

@@ -16,6 +16,8 @@ interface CrazyGamesSdk {
     gameplayStop(): void;
     happytime(): void;
     inviteLink(params: Record<string, string>): string;
+    settings?: { muteAudio?: boolean };
+    addSettingsChangeListener?(listener: (settings: { muteAudio?: boolean }) => void): void;
   };
   ad: {
     requestAd(
@@ -60,6 +62,15 @@ export class CrazyGamesAdapter implements PlatformSdk {
     } catch (err) {
       console.warn('CrazyGames SDK failed to init, running without it', err);
     }
+  }
+
+  onAudioMuteChange(listener: (muted: boolean) => void): void {
+    listener(this.sdk?.game.settings?.muteAudio === true);
+    this.safe((sdk) => {
+      sdk.game.addSettingsChangeListener?.((settings) => {
+        listener(settings.muteAudio === true);
+      });
+    });
   }
 
   loadingStart(): void {

@@ -25,6 +25,8 @@ export class Sfx {
   private lastOrbAt = 0;
   private orbStreak = 0;
   private _muted: boolean;
+  /** Muted by the platform (CrazyGames audio setting), independent of the player's toggle. */
+  private platformMuted = false;
 
   constructor(muted = false) {
     this._muted = muted;
@@ -36,10 +38,24 @@ export class Sfx {
 
   setMuted(muted: boolean): void {
     this._muted = muted;
+    this.applyVolume();
+  }
+
+  setPlatformMuted(muted: boolean): void {
+    this.platformMuted = muted;
+    this.applyVolume();
+  }
+
+  /** True when no sound should play, for either reason. */
+  get silent(): boolean {
+    return this._muted || this.platformMuted;
+  }
+
+  private applyVolume(): void {
     if (this.master && this.ctx) {
-      this.master.gain.setTargetAtTime(muted ? 0 : 0.5, this.ctx.currentTime, 0.02);
+      this.master.gain.setTargetAtTime(this.silent ? 0 : 0.5, this.ctx.currentTime, 0.02);
     }
-    if (muted) this.boost(false);
+    if (this.silent) this.boost(false);
   }
 
   /** Must be called from a user gesture (click / key / touch). Safe to call repeatedly. */
@@ -54,7 +70,7 @@ export class Sfx {
       if (!Ctor) return;
       this.ctx = new Ctor();
       this.master = this.ctx.createGain();
-      this.master.gain.value = this._muted ? 0 : 0.5;
+      this.master.gain.value = this.silent ? 0 : 0.5;
       this.master.connect(this.ctx.destination);
       this.noiseBuffer = this.makeNoise();
     }
@@ -139,7 +155,7 @@ export class Sfx {
   boost(on: boolean): void {
     const ctx = this.ctx;
     if (!ctx || !this.master || !this.noiseBuffer) return;
-    if (on && !this.boostNode && !this._muted) {
+    if (on && !this.boostNode && !this.silent) {
       const src = ctx.createBufferSource();
       src.buffer = this.noiseBuffer;
       src.loop = true;
@@ -165,7 +181,7 @@ export class Sfx {
 
   private tone({ freq, to, dur, type = 'sine', gain = 0.2, delay = 0 }: ToneOpts): void {
     const ctx = this.ctx;
-    if (!ctx || !this.master || this._muted) return;
+    if (!ctx || !this.master || this.silent) return;
     const t = ctx.currentTime + delay;
     const osc = ctx.createOscillator();
     osc.type = type;
@@ -192,7 +208,7 @@ export class Sfx {
     delay?: number;
   }): void {
     const ctx = this.ctx;
-    if (!ctx || !this.master || !this.noiseBuffer || this._muted) return;
+    if (!ctx || !this.master || !this.noiseBuffer || this.silent) return;
     const t = ctx.currentTime + delay;
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuffer;
