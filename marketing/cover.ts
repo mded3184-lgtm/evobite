@@ -43,7 +43,7 @@ interface Placement {
 
 const P: Record<Layout, Placement> = {
   landscape: {
-    hero: { x: W * 0.6, y: H * 0.6, r: U * 0.26 },
+    hero: { x: W * 0.6, y: H * 0.67, r: U * 0.25 },
     dir: norm(1, -0.28),
     giant: { x: W * 1.0, y: -H * 0.05, r: U * 0.62 },
     prey: [
@@ -51,10 +51,10 @@ const P: Record<Layout, Placement> = {
       { x: W * 0.93, y: H * 0.72, r: U * 0.055, skin: 'ocean' },
       { x: W * 0.8, y: H * 0.86, r: U * 0.045, skin: 'toxic' },
     ],
-    title: { left: W * 0.045, top: H * 0.09, size: U * 0.24, rotate: -4 },
+    title: { left: W * 0.11, top: H * 0.2, size: U * 0.21, rotate: -4 },
   },
   portrait: {
-    hero: { x: W * 0.46, y: H * 0.69, r: U * 0.29 },
+    hero: { x: W * 0.46, y: H * 0.71, r: U * 0.28 },
     dir: norm(1, -0.45),
     giant: { x: W * 1.08, y: H * 0.28, r: U * 0.5 },
     prey: [
@@ -62,17 +62,24 @@ const P: Record<Layout, Placement> = {
       { x: W * 0.88, y: H * 0.72, r: U * 0.065, skin: 'ocean' },
       { x: W * 0.16, y: H * 0.88, r: U * 0.055, skin: 'toxic' },
     ],
-    title: { left: W * 0.5, top: H * 0.045, size: W * 0.3, rotate: -4, center: true, stack: true },
+    title: {
+      left: W * 0.55,
+      top: H * 0.085,
+      size: W * 0.28,
+      rotate: -4,
+      center: true,
+      stack: true,
+    },
   },
   square: {
-    hero: { x: W * 0.47, y: H * 0.62, r: U * 0.25 },
+    hero: { x: W * 0.47, y: H * 0.71, r: U * 0.22 },
     dir: norm(1, -0.35),
     giant: { x: W * 1.1, y: H * 0.18, r: U * 0.36 },
     prey: [
       { x: W * 0.84, y: H * 0.5, r: U * 0.07, skin: 'candy' },
       { x: W * 0.86, y: H * 0.79, r: U * 0.055, skin: 'ocean' },
     ],
-    title: { left: W * 0.5, top: H * 0.07, size: U * 0.2, rotate: -4, center: true },
+    title: { left: W * 0.54, top: H * 0.19, size: U * 0.175, rotate: -4, center: true },
   },
 };
 
