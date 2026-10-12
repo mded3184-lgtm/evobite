@@ -23,6 +23,18 @@ import { DeathScreen, PauseScreen } from '@/ui/screens';
 const MUTE_KEY = 'evobite.muted';
 const LANG_KEY = 'evobite.lang';
 
+function hideSplash(): void {
+  const splash = document.getElementById('splash');
+  if (!splash) return;
+  splash.classList.add('out');
+  splash.addEventListener('transitionend', () => {
+    splash.remove();
+  });
+  setTimeout(() => {
+    splash.remove();
+  }, 600);
+}
+
 async function boot(): Promise<void> {
   const sdk = createPlatformSdk();
   await sdk.init();
@@ -291,6 +303,7 @@ async function boot(): Promise<void> {
 
   menu.show(progress);
   loop.start();
+  hideSplash();
   // The lobby is interactive once the UI font is in; that's the end of loading for CrazyGames.
   void document.fonts.ready.then(() => {
     sdk.loadingStop();
@@ -323,4 +336,5 @@ boot().catch((err: unknown) => {
   console.error('EvoBite failed to start', err);
   const overlay = document.getElementById('overlay');
   if (overlay) overlay.textContent = t('error.start');
+  hideSplash();
 });

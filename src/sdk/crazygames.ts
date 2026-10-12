@@ -40,6 +40,8 @@ declare global {
   }
 }
 
+/** How long the boot waits for the SDK before starting without it. */
+const INIT_TIMEOUT_MS = 3000;
 /** How long to wait for an ad to start before giving up and resuming the game. */
 const AD_START_TIMEOUT_MS = 4000;
 /** Hard cap for a running ad, in case its finish callback never arrives. */
@@ -54,7 +56,15 @@ export class CrazyGamesAdapter implements PlatformSdk {
     const sdk = window.CrazyGames?.SDK;
     if (!sdk) return;
     try {
-      await sdk.init();
+      // Never let a slow or unreachable SDK backend hold the lobby back.
+      await Promise.race([
+        sdk.init(),
+        new Promise<void>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('SDK init timed out'));
+          }, INIT_TIMEOUT_MS);
+        }),
+      ]);
       // Outside CrazyGames (e.g. GitHub Pages) the SDK is 'disabled': its calls may throw or
       // never call back. Use it only where it actually works.
       if (sdk.environment === 'disabled') return;

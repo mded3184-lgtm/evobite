@@ -36,7 +36,7 @@ export class Game {
     this.world = new World(seed);
     // Pre-populate so the arena is alive before the player joins.
     spawnerSystem(this.world);
-    for (let i = 0; i < 60 * 6; i++) this.stepWorld(1 / 60);
+    for (let i = 0; i < 60 * 3; i++) this.stepWorld(1 / 60);
 
     this.world.events.on('creatureEaten', ({ eater, prey, revenge }) => {
       if (eater.kind === 'player' && revenge) this.revengeKills++;
