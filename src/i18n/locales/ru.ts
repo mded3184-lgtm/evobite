@@ -7,7 +7,7 @@ export const ru: Messages = {
   'lobby.skins': 'Скины',
   'lobby.perks': 'Перки',
   'lobby.language': 'Язык',
-  'lobby.hint': 'Движение: мышь или палец · Рывок: пробел · Пауза: Esc · Эволюция: 1 / 2',
+  'lobby.hint': 'Движение: мышь или палец · Рывок: пробел · Пауза: P · Эволюция: 1 / 2',
   'stat.bestMass': 'рекорд массы',
   'stat.kills': 'убийства',
   'stat.rounds': 'раунды',
@@ -64,7 +64,7 @@ export const ru: Messages = {
   'pause.soundOn': 'Звук: вкл.',
   'pause.soundOff': 'Звук: выкл.',
   'pause.quit': 'Выйти в меню',
-  'pause.hint': 'Esc или P, чтобы продолжить',
+  'pause.hint': 'P, чтобы продолжить',
 
   'error.start': 'Не удалось запустить игру. Обнови страницу.',
 

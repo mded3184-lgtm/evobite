@@ -10,6 +10,8 @@ interface CrazyGamesSdk {
   /** 'crazygames' on the portal, 'local' on localhost, 'disabled' on any other host. */
   environment?: string;
   game: {
+    loadingStart?(): void;
+    loadingStop?(): void;
     gameplayStart(): void;
     gameplayStop(): void;
     happytime(): void;
@@ -60,6 +62,16 @@ export class CrazyGamesAdapter implements PlatformSdk {
     }
   }
 
+  loadingStart(): void {
+    this.safe((sdk) => {
+      sdk.game.loadingStart?.();
+    });
+  }
+  loadingStop(): void {
+    this.safe((sdk) => {
+      sdk.game.loadingStop?.();
+    });
+  }
   gameplayStart(): void {
     this.safe((sdk) => {
       sdk.game.gameplayStart();
@@ -80,7 +92,7 @@ export class CrazyGamesAdapter implements PlatformSdk {
    * Always resolves: when the ad finishes or errors, when it fails to start within a few
    * seconds, or after a hard cap. A respawn can never get stuck behind an ad.
    */
-  showMidgameAd(): Promise<void> {
+  showMidgameAd(onStart?: () => void): Promise<void> {
     const sdk = this.sdk;
     if (!sdk) return this.fallback.showMidgameAd();
     return new Promise((resolve) => {
@@ -100,6 +112,8 @@ export class CrazyGamesAdapter implements PlatformSdk {
         sdk.ad.requestAd('midgame', {
           adStarted: () => {
             window.clearTimeout(startTimer);
+            // Mute only once an ad really plays; unfilled requests never reach this.
+            onStart?.();
           },
           adFinished: finish,
           adError: finish,

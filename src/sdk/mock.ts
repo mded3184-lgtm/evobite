@@ -20,6 +20,12 @@ export class MockSdk implements PlatformSdk {
   async init(): Promise<void> {
     /* nothing to do */
   }
+  loadingStart(): void {
+    /* noop */
+  }
+  loadingStop(): void {
+    /* noop */
+  }
   gameplayStart(): void {
     /* noop */
   }

@@ -7,7 +7,7 @@ export const tr: Messages = {
   'lobby.skins': 'Görünümler',
   'lobby.perks': 'Yetenekler',
   'lobby.language': 'Dil',
-  'lobby.hint': 'Hareket: fare veya sürükle · Hızlan: Boşluk · Duraklat: Esc · Evrim: 1 / 2',
+  'lobby.hint': 'Hareket: fare veya sürükle · Hızlan: Boşluk · Duraklat: P · Evrim: 1 / 2',
   'stat.bestMass': 'rekor kütle',
   'stat.kills': 'avlanan',
   'stat.rounds': 'tur',
@@ -64,7 +64,7 @@ export const tr: Messages = {
   'pause.soundOn': 'Ses: açık',
   'pause.soundOff': 'Ses: kapalı',
   'pause.quit': 'Menüye dön',
-  'pause.hint': 'Devam için Esc veya P',
+  'pause.hint': 'Devam için P',
 
   'error.start': 'Başlatılamadı. Lütfen sayfayı yenile.',
 

@@ -7,7 +7,7 @@ export const de: Messages = {
   'lobby.skins': 'Skins',
   'lobby.perks': 'Perks',
   'lobby.language': 'Sprache',
-  'lobby.hint': 'Bewegen: Maus oder ziehen · Boost: Leertaste · Pause: Esc · Entwickeln: 1 / 2',
+  'lobby.hint': 'Bewegen: Maus oder ziehen · Boost: Leertaste · Pause: P · Entwickeln: 1 / 2',
   'stat.bestMass': 'Rekordmasse',
   'stat.kills': 'Kills',
   'stat.rounds': 'Runden',
@@ -64,7 +64,7 @@ export const de: Messages = {
   'pause.soundOn': 'Ton: an',
   'pause.soundOff': 'Ton: aus',
   'pause.quit': 'Zum Menü',
-  'pause.hint': 'Esc oder P zum Fortsetzen',
+  'pause.hint': 'P zum Fortsetzen',
 
   'error.start': 'Start fehlgeschlagen. Bitte neu laden.',
 

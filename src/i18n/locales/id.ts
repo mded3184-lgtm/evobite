@@ -7,7 +7,7 @@ export const id: Messages = {
   'lobby.skins': 'Skin',
   'lobby.perks': 'Kemampuan',
   'lobby.language': 'Bahasa',
-  'lobby.hint': 'Gerak: mouse atau geser · Dorongan: Spasi · Jeda: Esc · Evolusi: 1 / 2',
+  'lobby.hint': 'Gerak: mouse atau geser · Dorongan: Spasi · Jeda: P · Evolusi: 1 / 2',
   'stat.bestMass': 'massa rekor',
   'stat.kills': 'mangsa',
   'stat.rounds': 'ronde',
@@ -64,7 +64,7 @@ export const id: Messages = {
   'pause.soundOn': 'Suara: nyala',
   'pause.soundOff': 'Suara: mati',
   'pause.quit': 'Keluar ke menu',
-  'pause.hint': 'Esc atau P untuk lanjut',
+  'pause.hint': 'P untuk lanjut',
 
   'error.start': 'Gagal memulai. Muat ulang halaman.',
 

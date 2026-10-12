@@ -63,6 +63,10 @@ export const CONFIG = {
     /** Share of bots wearing a shop skin. */
     skinChance: 0.25,
   },
+  ads: {
+    /** No midgame ad before this many seconds of real play in a session. */
+    firstAdAfterSec: 180,
+  },
   venom: {
     /** Share of drained mass the venomous creature keeps. */
     gainFraction: 0.5,

@@ -192,11 +192,6 @@ export class Lobby {
         if (e.target === modal) closeModal(modal);
       });
     }
-    window.addEventListener('keydown', (e) => {
-      if (e.key !== 'Escape') return;
-      closeModal(this.shop);
-      closeModal(this.perks);
-    });
 
     must<HTMLButtonElement>('.skin-prev', this.root).addEventListener('click', () => {
       this.cycleSkin(-1);

@@ -77,6 +77,41 @@ describe('CrazyGames adapter never blocks the game', () => {
     expect(done).toBe(true); // hard cap
   });
 
+  it('calls onStart (mute) only when an ad really starts, never for an unfilled request', async () => {
+    let started = 0;
+    const filled = await adapterWith(
+      fakeSdk({
+        requestAd: (cb) => {
+          cb.adStarted?.();
+          cb.adFinished();
+        },
+      }),
+    );
+    await filled.showMidgameAd(() => started++);
+    expect(started).toBe(1);
+    const unfilled = await adapterWith(
+      fakeSdk({
+        requestAd: (cb) => {
+          cb.adError();
+        },
+      }),
+    );
+    await unfilled.showMidgameAd(() => started++);
+    expect(started).toBe(1);
+  });
+
+  it('forwards loading events to the SDK', async () => {
+    const sdk = fakeSdk({ requestAd: () => undefined });
+    const game = sdk.game as Record<string, unknown>;
+    game.loadingStart = vi.fn();
+    game.loadingStop = vi.fn();
+    const a = await adapterWith(sdk);
+    a.loadingStart();
+    a.loadingStop();
+    expect(game.loadingStart).toHaveBeenCalledOnce();
+    expect(game.loadingStop).toHaveBeenCalledOnce();
+  });
+
   it('resolves immediately when requestAd throws', async () => {
     const a = await adapterWith(
       fakeSdk({

@@ -7,7 +7,7 @@ export const pl: Messages = {
   'lobby.skins': 'Skórki',
   'lobby.perks': 'Atuty',
   'lobby.language': 'Język',
-  'lobby.hint': 'Ruch: mysz lub przeciąganie · Zryw: Spacja · Pauza: Esc · Ewolucja: 1 / 2',
+  'lobby.hint': 'Ruch: mysz lub przeciąganie · Zryw: Spacja · Pauza: P · Ewolucja: 1 / 2',
   'stat.bestMass': 'rekord masy',
   'stat.kills': 'zabójstwa',
   'stat.rounds': 'rundy',
@@ -64,7 +64,7 @@ export const pl: Messages = {
   'pause.soundOn': 'Dźwięk: wł.',
   'pause.soundOff': 'Dźwięk: wył.',
   'pause.quit': 'Wyjdź do menu',
-  'pause.hint': 'Esc lub P, aby wznowić',
+  'pause.hint': 'P, aby wznowić',
 
   'error.start': 'Nie udało się uruchomić. Odśwież stronę.',
 

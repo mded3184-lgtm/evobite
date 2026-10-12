@@ -7,7 +7,7 @@ export const es: Messages = {
   'lobby.skins': 'Aspectos',
   'lobby.perks': 'Mejoras',
   'lobby.language': 'Idioma',
-  'lobby.hint': 'Mover: ratón o arrastrar · Impulso: Espacio · Pausa: Esc · Evolucionar: 1 / 2',
+  'lobby.hint': 'Mover: ratón o arrastrar · Impulso: Espacio · Pausa: P · Evolucionar: 1 / 2',
   'stat.bestMass': 'masa récord',
   'stat.kills': 'bajas',
   'stat.rounds': 'rondas',
@@ -64,7 +64,7 @@ export const es: Messages = {
   'pause.soundOn': 'Sonido: sí',
   'pause.soundOff': 'Sonido: no',
   'pause.quit': 'Salir al menú',
-  'pause.hint': 'Esc o P para continuar',
+  'pause.hint': 'P para continuar',
 
   'error.start': 'No se pudo iniciar. Recarga la página.',
 

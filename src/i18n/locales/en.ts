@@ -9,7 +9,7 @@ export const en = {
   'lobby.skins': 'Skins',
   'lobby.perks': 'Perks',
   'lobby.language': 'Language',
-  'lobby.hint': 'Move: mouse or drag · Boost: hold Space · Pause: Esc · Evolve: 1 / 2',
+  'lobby.hint': 'Move: mouse or drag · Boost: hold Space · Pause: P · Evolve: 1 / 2',
   'stat.bestMass': 'best mass',
   'stat.kills': 'kills',
   'stat.rounds': 'rounds',
@@ -66,7 +66,7 @@ export const en = {
   'pause.soundOn': 'Sound: on',
   'pause.soundOff': 'Sound: off',
   'pause.quit': 'Quit to menu',
-  'pause.hint': 'Esc or P to resume',
+  'pause.hint': 'P to resume',
 
   'error.start': 'Failed to start. Please reload.',
 

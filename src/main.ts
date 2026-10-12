@@ -26,6 +26,7 @@ const LANG_KEY = 'evobite.lang';
 async function boot(): Promise<void> {
   const sdk = createPlatformSdk();
   await sdk.init();
+  sdk.loadingStart();
   setLanguage(detectLanguage(sdk.getItem(LANG_KEY), navigator.languages));
 
   const canvas = must<HTMLCanvasElement>('#game');
@@ -98,6 +99,8 @@ async function boot(): Promise<void> {
   };
 
   let respawning = false;
+  /** Seconds of actual play this session (menus, pauses and evolution choices excluded). */
+  let playedSeconds = 0;
 
   const toMenu = (): void => {
     death.hide();
@@ -169,12 +172,22 @@ async function boot(): Promise<void> {
       if (respawning) return;
       respawning = true;
       sfx.unlock();
-      sfx.suspend();
-      void sdk.showMidgameAd().then(() => {
+      // No ad in the first minutes of a session: early ads hurt retention, and CrazyGames
+      // recommends waiting 3-5 minutes. After that the SDK paces ads itself (max 1 / 3 min).
+      if (playedSeconds < CONFIG.ads.firstAdAfterSec) {
         respawning = false;
-        sfx.resume();
         startRound();
-      });
+        return;
+      }
+      void sdk
+        .showMidgameAd(() => {
+          sfx.suspend();
+        })
+        .then(() => {
+          respawning = false;
+          sfx.resume();
+          startRound();
+        });
     },
     onMenu: toMenu,
   });
@@ -183,7 +196,8 @@ async function boot(): Promise<void> {
   pauseScreen.setSound(sfx.muted);
   menu.setSound(sfx.muted);
 
-  keyboard.onPress(['Escape', 'KeyP'], () => {
+  // Not Escape: on CrazyGames it exits fullscreen, so it must not double as a game key.
+  keyboard.onPress(['KeyP'], () => {
     if (game.phase === 'playing') setPaused(!game.isPaused);
   });
   keyboard.onPress(['KeyM'], toggleSound);
@@ -242,6 +256,7 @@ async function boot(): Promise<void> {
       game.setBoost(live && (keyboard.isHeld('Space') || hud.boostHeld));
 
       game.update(dt);
+      if (game.phase === 'playing' && !game.isChoosing && !game.isPaused) playedSeconds += dt;
 
       const boosting = game.playerBoosting;
       sfx.boost(boosting);
@@ -259,6 +274,10 @@ async function boot(): Promise<void> {
 
   menu.show(progress);
   loop.start();
+  // The lobby is interactive once the UI font is in; that's the end of loading for CrazyGames.
+  void document.fonts.ready.then(() => {
+    sdk.loadingStop();
+  });
 
   // Dev-only handle for debugging and browser smoke tests; stripped from production builds.
   if (import.meta.env.DEV) {

@@ -7,7 +7,7 @@ export const uk: Messages = {
   'lobby.skins': 'Скіни',
   'lobby.perks': 'Перки',
   'lobby.language': 'Мова',
-  'lobby.hint': 'Рух: мишка або палець · Прискорення: пробіл · Пауза: Esc · Еволюція: 1 / 2',
+  'lobby.hint': 'Рух: мишка або палець · Прискорення: пробіл · Пауза: P · Еволюція: 1 / 2',
   'stat.bestMass': 'рекорд маси',
   'stat.kills': 'вбивства',
   'stat.rounds': 'раунди',
@@ -64,7 +64,7 @@ export const uk: Messages = {
   'pause.soundOn': 'Звук: увімк.',
   'pause.soundOff': 'Звук: вимк.',
   'pause.quit': 'Вийти в меню',
-  'pause.hint': 'Esc або P, щоб продовжити',
+  'pause.hint': 'P, щоб продовжити',
 
   'error.start': 'Не вдалося запустити гру. Онови сторінку.',
 

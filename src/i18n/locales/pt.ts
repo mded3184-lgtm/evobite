@@ -7,7 +7,7 @@ export const pt: Messages = {
   'lobby.skins': 'Skins',
   'lobby.perks': 'Vantagens',
   'lobby.language': 'Idioma',
-  'lobby.hint': 'Mover: mouse ou arrastar · Turbo: Espaço · Pausa: Esc · Evoluir: 1 / 2',
+  'lobby.hint': 'Mover: mouse ou arrastar · Turbo: Espaço · Pausa: P · Evoluir: 1 / 2',
   'stat.bestMass': 'massa recorde',
   'stat.kills': 'abates',
   'stat.rounds': 'partidas',
@@ -64,7 +64,7 @@ export const pt: Messages = {
   'pause.soundOn': 'Som: ligado',
   'pause.soundOff': 'Som: desligado',
   'pause.quit': 'Sair para o menu',
-  'pause.hint': 'Esc ou P para continuar',
+  'pause.hint': 'P para continuar',
 
   'error.start': 'Falha ao iniciar. Recarregue a página.',
 

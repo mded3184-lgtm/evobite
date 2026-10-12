@@ -7,7 +7,7 @@ export const fr: Messages = {
   'lobby.skins': 'Skins',
   'lobby.perks': 'Atouts',
   'lobby.language': 'Langue',
-  'lobby.hint': 'Bouger : souris ou glisser · Boost : Espace · Pause : Échap · Évoluer : 1 / 2',
+  'lobby.hint': 'Bouger : souris ou glisser · Boost : Espace · Pause : P · Évoluer : 1 / 2',
   'stat.bestMass': 'masse record',
   'stat.kills': 'victimes',
   'stat.rounds': 'parties',
@@ -64,7 +64,7 @@ export const fr: Messages = {
   'pause.soundOn': 'Son : activé',
   'pause.soundOff': 'Son : coupé',
   'pause.quit': 'Retour au menu',
-  'pause.hint': 'Échap ou P pour reprendre',
+  'pause.hint': 'P pour reprendre',
 
   'error.start': 'Échec du lancement. Recharge la page.',
 
