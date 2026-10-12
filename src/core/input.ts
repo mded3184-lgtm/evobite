@@ -8,6 +8,7 @@ import type { Vec2 } from './vec';
 export class Input {
   private readonly aim: Vec2 = { x: 0, y: 0 };
   private active = false;
+  private type = 'mouse';
 
   constructor(private readonly target: HTMLElement) {
     target.addEventListener('pointermove', this.onPointer, { passive: true });
@@ -29,6 +30,11 @@ export class Input {
     return this.aim;
   }
 
+  /** 'mouse', 'pen' or 'touch': whatever moved the pointer last. */
+  get pointerType(): string {
+    return this.type;
+  }
+
   /** True while a finger is down. Used so a touch player who lifts off coasts rather than stops. */
   get isActive(): boolean {
     return this.active;
@@ -42,6 +48,9 @@ export class Input {
   }
 
   private readonly onPointer = (e: PointerEvent): void => {
+    this.type = e.pointerType;
+    // Touches steer through the virtual joystick, not by aiming at the finger.
+    if (e.pointerType === 'touch') return;
     const rect = this.target.getBoundingClientRect();
     this.aim.x = e.clientX - rect.left;
     this.aim.y = e.clientY - rect.top;

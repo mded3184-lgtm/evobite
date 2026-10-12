@@ -16,6 +16,7 @@ import { loadProgress, saveProgress } from '@/sdk/storage';
 import { must } from '@/ui/dom';
 import { EvolutionPicker } from '@/ui/evolutionPicker';
 import { Hud } from '@/ui/hud';
+import { Joystick } from '@/ui/joystick';
 import { Lobby } from '@/ui/lobby';
 import { DeathScreen, PauseScreen } from '@/ui/screens';
 
@@ -34,6 +35,7 @@ async function boot(): Promise<void> {
   const renderer = new Renderer(canvas, game);
   const input = new Input(canvas);
   const keyboard = new Keyboard();
+  const isTouch = window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
   const sfx = new Sfx(sdk.getItem(MUTE_KEY) === '1');
   let progress: Progress = loadProgress(sdk);
   game.playerSkin = progress.selectedSkin;
@@ -80,6 +82,8 @@ async function boot(): Promise<void> {
     onToggleSound: toggleSound,
   });
   const picker = new EvolutionPicker(overlay);
+  // Created after the HUD so the stick draws above the arena but below the HUD buttons.
+  const joystick = new Joystick(canvas, overlay);
 
   // ---- rounds -------------------------------------------------------------
 
@@ -225,7 +229,16 @@ async function boot(): Promise<void> {
   const loop = new GameLoop({
     update: (dt) => {
       const live = game.phase === 'playing' && !game.isChoosing && !game.isPaused;
-      if (live) game.aimAt(renderer.screenToWorld(input.aimPoint));
+      if (live) {
+        const stick = joystick.direction;
+        if (stick) game.steer(stick);
+        else if (input.pointerType !== 'touch') game.aimAt(renderer.screenToWorld(input.aimPoint));
+        // Touch with the stick released: keep moving in the last direction.
+      }
+      // Hidden while the picker or pause menu is up, so it never draws over them.
+      joystick.setEnabled(
+        isTouch && game.phase === 'playing' && !game.isChoosing && !game.isPaused,
+      );
       game.setBoost(live && (keyboard.isHeld('Space') || hud.boostHeld));
 
       game.update(dt);

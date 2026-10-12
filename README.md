@@ -11,8 +11,10 @@ No engine, no image assets: TypeScript + Canvas 2D, ~35 KB of JavaScript.
 
 ## Play
 
-- **Move**: mouse, or drag with one finger.
-- **Boost**: hold `Space`, or hold the BOOST button on touch screens. Costs mass; half of it
+- **Move**: mouse on desktop. On touch screens, a floating joystick: put a thumb down anywhere
+  on the arena and drag; release to keep going in the same direction.
+- **Boost**: hold `Space`, or hold the yellow BOOST button on touch screens (works with a second
+  finger while the first steers). Costs mass; half of it
   drops behind you as orbs.
 - **Pause**: `Esc` / `P`, or the pause button. The whole arena freezes.
 - **Sound**: `M`, or the speaker button. All sounds are synthesized, no audio files.

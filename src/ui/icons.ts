@@ -56,6 +56,7 @@ export const ICONS = {
   ),
   check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
   refresh: svg('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>'),
+  bolt: svg('<path d="M13.5 2 4 13.5h7L10 22l10-12.5h-7z"/>', true),
   home: svg('<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/>'),
 } as const;
 

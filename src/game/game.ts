@@ -90,6 +90,16 @@ export class Game {
     p.heading.y = dir.y;
   }
 
+  /** Steer the player in a screen-independent direction (unit vector), e.g. from a joystick. */
+  steer(dir: Vec2): void {
+    const p = this.world.player;
+    if (!p || !p.alive || this.world.paused) return;
+    const len = Math.hypot(dir.x, dir.y);
+    if (len === 0) return;
+    p.heading.x = dir.x / len;
+    p.heading.y = dir.y / len;
+  }
+
   chooseBranch(branch: BranchId): void {
     const p = this.world.player;
     if (!p || !this.world.paused) return;

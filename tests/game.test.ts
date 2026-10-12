@@ -134,3 +134,25 @@ describe('Rng', () => {
     expect([a.next(), a.next(), a.int(1, 6)]).toEqual([b.next(), b.next(), b.int(1, 6)]);
   });
 });
+
+describe('joystick steering', () => {
+  it('steer() points the player along the given direction, normalized', () => {
+    const game = new Game(21);
+    const p = game.startRound();
+    game.steer({ x: 3, y: 4 });
+    expect(p.heading.x).toBeCloseTo(0.6);
+    expect(p.heading.y).toBeCloseTo(0.8);
+  });
+
+  it('steer() ignores zero input and is blocked while choosing an evolution', () => {
+    const game = new Game(22);
+    const p = game.startRound();
+    game.steer({ x: 1, y: 0 });
+    game.steer({ x: 0, y: 0 });
+    expect(p.heading).toEqual({ x: 1, y: 0 });
+    p.mass = CONFIG.evolution.thresholds[0];
+    game.update(1 / 60);
+    game.steer({ x: 0, y: 1 });
+    expect(p.heading).toEqual({ x: 1, y: 0 });
+  });
+});

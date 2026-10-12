@@ -54,7 +54,7 @@ export class Hud {
         <button class="hud-btn hud-pause" type="button" aria-label="Pause">${ICONS.pause}</button>
         <button class="hud-btn hud-sound" type="button" aria-label="Toggle sound">${ICONS.soundOn}</button>
       </div>
-      <button class="hud-boost" type="button" aria-label="Boost">${t('hud.boost')}</button>
+      <button class="hud-boost" type="button" aria-label="Boost">${ICONS.bolt}<span>${t('hud.boost')}</span></button>
     `;
     container.appendChild(this.root);
     this.mass = must('.hud-mass-value', this.root);
