@@ -64,22 +64,25 @@ export function drawCreatureArt(ctx: CanvasRenderingContext2D, a: CreatureArt): 
         : `hsl(${String(accentHue)} 90% 60%)`;
   }
 
-  // Boost afterimages.
-  if (a.boosting) {
-    for (let i = 3; i >= 1; i--) {
-      ctx.globalAlpha = 0.12 * (4 - i);
-      ctx.fillStyle = skin ? edge : plain;
-      ctx.beginPath();
-      ctx.arc(
-        x - dir.x * r * 0.55 * i,
-        y - dir.y * r * 0.55 * i,
-        r * (1 - i * 0.12),
-        0,
-        Math.PI * 2,
-      );
-      ctx.fill();
-    }
+  // Boost: speed lines and a soft ghost behind, then the body is drawn stretched along the
+  // direction of travel (cartoon "dash" squash and stretch).
+  const boosting = a.boosting === true;
+  if (boosting) {
+    drawSpeedLines(ctx, x, y, r, dir, time);
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = skin ? edge : plain;
+    ctx.beginPath();
+    ctx.arc(x - dir.x * r * 0.7, y - dir.y * r * 0.7, r * 0.86, 0, Math.PI * 2);
+    ctx.fill();
     ctx.globalAlpha = 1;
+    ctx.save();
+    const angle = Math.atan2(dir.y, dir.x);
+    const wobble = 1 + Math.sin(time * 30) * 0.015;
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.scale(1.13 * wobble, 0.9 / wobble);
+    ctx.rotate(-angle);
+    ctx.translate(-x, -y);
   }
 
   // Swift fins.
@@ -200,6 +203,67 @@ export function drawCreatureArt(ctx: CanvasRenderingContext2D, a: CreatureArt): 
     }
     ctx.fill();
   }
+
+  if (boosting) {
+    ctx.restore();
+    drawBowWave(ctx, x, y, r, dir, time);
+  }
+}
+
+/** Animated streaks trailing behind a boosting creature. */
+function drawSpeedLines(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  dir: Vec2,
+  time: number,
+): void {
+  const side = { x: -dir.y, y: dir.x };
+  ctx.lineCap = 'round';
+  // White reads on every skin and on the dark arena.
+  ctx.strokeStyle = '#ffffff';
+  const lanes = [-0.62, -0.3, 0, 0.3, 0.62];
+  lanes.forEach((lane, i) => {
+    // Each streak slides backwards and loops, at its own phase and speed.
+    const phase = (time * (2.2 + i * 0.37) + i * 0.29) % 1;
+    const start = r * (0.9 + phase * 0.9);
+    const length = r * (0.7 + ((i * 7) % 5) * 0.12) * (1 - phase * 0.6);
+    const off = lane * r * (1 - Math.abs(lane) * 0.25);
+    const sx = x - dir.x * start + side.x * off;
+    const sy = y - dir.y * start + side.y * off;
+    ctx.globalAlpha = 0.55 * (1 - phase);
+    ctx.lineWidth = Math.max(1.5, r * (0.09 - Math.abs(lane) * 0.05));
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx - dir.x * length, sy - dir.y * length);
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/** Thin pulsing arc in front of the creature, like air being pushed aside. */
+function drawBowWave(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  dir: Vec2,
+  time: number,
+): void {
+  const angle = Math.atan2(dir.y, dir.x);
+  const pulse = (time * 3) % 1;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#ffffff';
+  for (let k = 0; k < 2; k++) {
+    const p = (pulse + k * 0.5) % 1;
+    ctx.globalAlpha = 0.45 * (1 - p);
+    ctx.lineWidth = Math.max(1.5, r * 0.07 * (1 - p * 0.5));
+    ctx.beginPath();
+    ctx.arc(x, y, r * (1.18 + p * 0.35), angle - 0.75 + p * 0.2, angle + 0.75 - p * 0.2);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
 }
 
 function bodyFill(

@@ -38,6 +38,17 @@ export class Particles {
     }
   }
 
+  /** One spark flung backwards from a boosting creature's tail. */
+  trail(at: Vec2, dir: Vec2, hue: number, size: number): void {
+    if (this.items.length >= Particles.MAX) return;
+    const spread = this.rng.range(-0.6, 0.6);
+    const speed = this.rng.range(80, 200);
+    const vx = (-dir.x + -dir.y * spread) * speed;
+    const vy = (-dir.y + dir.x * spread) * speed;
+    const life = this.rng.range(0.25, 0.5);
+    this.items.push({ x: at.x, y: at.y, vx, vy, life, maxLife: life, size, hue });
+  }
+
   update(dt: number): void {
     const items = this.items;
     for (let i = items.length - 1; i >= 0; i--) {

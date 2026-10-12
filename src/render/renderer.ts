@@ -12,6 +12,8 @@ import { Particles } from './particles';
 const BG = '#0b1020';
 /** Background camera in the lobby zooms as if following a creature of at most this mass. */
 const MENU_ZOOM_MASS = 150;
+/** Camera pulls out by this factor while the player boosts, to sell the speed. */
+const BOOST_ZOOM_KICK = 1.08;
 /** Orb hues are quantized to this many buckets so orbs can be drawn in a few batched fills. */
 export const ORB_HUE_BUCKETS = 12;
 const GRID = 'rgba(255,255,255,0.045)';
@@ -87,7 +89,7 @@ export class Renderer {
     const world = this.game.world;
     const p = world.player;
     if (p?.alive) {
-      this.camera.follow(p.pos, p.mass, dt);
+      this.camera.follow(p.pos, p.mass, dt, false, world.isBoosting(p) ? BOOST_ZOOM_KICK : 1);
     } else if (p) {
       // Kill cam: watch the killer, but keep the zoom you died with. Following a giant's zoom
       // would pull the camera out over the whole arena and redraw every orb each frame.
@@ -97,8 +99,35 @@ export class Renderer {
       const leader = world.leaderboard(1)[0];
       if (leader) this.camera.follow(leader.pos, Math.min(leader.mass, MENU_ZOOM_MASS), dt);
     }
+    this.emitBoostTrails(dt);
     this.particles.update(dt);
     this.pulse = Math.max(0, this.pulse - dt * 1.5);
+  }
+
+  private trailAcc = 0;
+
+  /** Sparks from the tails of visible boosting creatures, more for the player. */
+  private emitBoostTrails(dt: number): void {
+    if (dt <= 0) return;
+    this.trailAcc += dt;
+    const step = 1 / 40;
+    if (this.trailAcc < step) return;
+    const ticks = Math.min(4, Math.floor(this.trailAcc / step));
+    this.trailAcc -= ticks * step;
+    const world = this.game.world;
+    for (const c of world.creatures.values()) {
+      if (!c.alive || !world.isBoosting(c) || !this.isVisible(c.pos)) continue;
+      const r = world.radiusFor(c.mass);
+      const count = ticks * (c.kind === 'player' ? 2 : 1);
+      for (let i = 0; i < count; i++) {
+        this.particles.trail(
+          { x: c.pos.x - c.dir.x * r * 0.9, y: c.pos.y - c.dir.y * r * 0.9 },
+          c.dir,
+          c.hue,
+          Math.max(2.5, r * 0.12),
+        );
+      }
+    }
   }
 
   snapToPlayer(): void {

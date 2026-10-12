@@ -65,7 +65,7 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Grazer',
     blurb: 'Pull nearby orbs toward you. Never stop growing.',
     tags: ['orb magnet'],
-    patch: { magnetRadius: 50 },
+    patch: { magnetRadius: 60 },
   },
   apex: {
     id: 'apex',
@@ -81,7 +81,7 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Titan',
     blurb: 'Lose mass 40% slower. Enemies need to be 30% bigger to eat you.',
     tags: ['slow decay', 'harder to eat', '-speed'],
-    patch: { decayMult: 0.6, beEatenRatio: 1.3, speedMult: -0.1 },
+    patch: { decayMult: 0.5, beEatenRatio: 1.3, speedMult: -0.1 },
   },
 };
 

@@ -58,6 +58,8 @@ export const CONFIG = {
     eliteChance: 0.15,
     eliteMassMin: 120,
     eliteMassMax: 380,
+    /** Bots start steering off the wall this far from it (plus 1.5x their radius). */
+    wallMargin: 220,
     /** Share of bots wearing a shop skin. */
     skinChance: 0.25,
   },

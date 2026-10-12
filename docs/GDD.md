@@ -18,8 +18,8 @@ An eat-and-grow arena where every 30 seconds you choose what you become.
 | ---- | ---- | ------------------------------------------------------------- | ----------------------------------------------------------- |
 | 1    | 30   | **Swift** +18% speed                                          | **Bulk** +28% food, +10% absorb, −3% speed                  |
 | 2    | 80   | **Venom** drain 2.2%/s of the smaller mass, gain half         | **Armor** need 1.5× to be eaten, 70% venom resist           |
-| 3    | 200  | **Hunter** +60% vision, eat at 1.08×, +30% absorb, +10% speed | **Grazer** orb magnet 50u                                   |
-| 4    | 480  | **Apex** eat at 1.05×, +30% absorb, +5% speed                 | **Titan** 40% less decay, need 1.3× to be eaten, −10% speed |
+| 3    | 200  | **Hunter** +60% vision, eat at 1.08×, +30% absorb, +10% speed | **Grazer** orb magnet 60u                                   |
+| 4    | 480  | **Apex** eat at 1.05×, +30% absorb, +5% speed                 | **Titan** 50% less decay, need 1.3× to be eaten, −10% speed |
 
 16 final forms, each with a name ("Dart Viper", "Iron Colossus"…) so players talk about builds.
 Bots pick branches too, biased by an aggression personality, so the arena contains real builds.
@@ -44,8 +44,8 @@ away from a predator that is right on them, and aggressive bots lunge at prey in
 Numbers come from `npm run balance`: a headless simulator that locks bots to each of the 16
 builds evenly and runs many seeds. It reports average mass, kills and deaths per minute per
 build and per perk pair. Target: every pair within ±10–15% of its partner (seed noise alone is
-about ±10%). Latest run (16 seeds × 6 min): Swift −2 / Bulk +2, Venom +9 / Armor −8, Hunter +3 / Grazer −3,
-Apex +1 / Titan −1.
+about ±10%). Latest run (16 seeds × 6 min): Swift +10 / Bulk −9, Venom −2 / Armor +2, Hunter −5 / Grazer +6,
+Apex +4 / Titan −4.
 
 ## Rules that keep the arena honest
 
@@ -55,7 +55,7 @@ Apex +1 / Titan −1.
 - **Spawn protection**: 2 seconds, prevents being eaten, not eating.
 - **Decay**: none up to mass 300 (so the first three evolutions never fight it). Above that,
   1%/s of the excess, multiplied by `1 + (mass / 1000)²`: about 2 mass/s at 480, 14/s at 1000,
-  85/s at 2000 (Titan: 60% of that). Gentle for players, steep for giants, which settle around
+  85/s at 2000 (Titan: 50% of that). Gentle for players, steep for giants, which settle around
   2500–3200 mass.
 - **Speed**: `420 / mass^0.15`, so a hatchling is ~1.5× faster than a 480-mass giant.
 - **Elite bots**: 15% of respawns arrive at 120–380 mass so there is always something to fear

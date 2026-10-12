@@ -19,8 +19,9 @@ export class Camera {
     return this.height / this.viewHeight;
   }
 
-  follow(target: Vec2, mass: number, dt: number, snap = false): void {
-    const desiredView = CONFIG.camera.baseView * (1 + Math.sqrt(mass) * 0.07);
+  /** `zoomKick` > 1 pulls the camera out a little, e.g. while the player boosts. */
+  follow(target: Vec2, mass: number, dt: number, snap = false, zoomKick = 1): void {
+    const desiredView = CONFIG.camera.baseView * (1 + Math.sqrt(mass) * 0.07) * zoomKick;
     if (snap) {
       this.pos.x = target.x;
       this.pos.y = target.y;

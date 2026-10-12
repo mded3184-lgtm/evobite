@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { botSystem } from '@/game/systems/bots';
+import { CONFIG } from '@/config';
+import { Game } from '@/game/game';
+import { avoidWalls, botSystem } from '@/game/systems/bots';
 import { World } from '@/game/world';
 import type { Creature } from '@/game/types';
 /** Spawn without spawn protection so predation can be tested immediately. */
@@ -53,4 +55,59 @@ describe('bot AI', () => {
     expect(['wander', 'graze']).toContain(bot.bot.state);
     expect(Math.hypot(bot.heading.x, bot.heading.y)).toBeCloseTo(1);
   });
+});
+
+describe('wall avoidance', () => {
+  it('never leaves a bot heading outward when it is at the wall', () => {
+    const w = new World(11);
+    const R = CONFIG.arena.radius;
+    for (let a = 0; a < Math.PI * 2; a += 0.3) {
+      const bot = spawn(w, 'bot', 'b', 40, {
+        x: Math.cos(a) * (R - 30),
+        y: Math.sin(a) * (R - 30),
+      });
+      bot.heading = { x: Math.cos(a), y: Math.sin(a) }; // straight into the wall
+      avoidWalls(w, bot, null);
+      const outward = bot.heading.x * Math.cos(a) + bot.heading.y * Math.sin(a);
+      expect(outward).toBeLessThan(0);
+      expect(Math.hypot(bot.heading.x, bot.heading.y)).toBeCloseTo(1);
+    }
+  });
+
+  it('slides along the wall away from the pursuer', () => {
+    const w = new World(12);
+    const R = CONFIG.arena.radius;
+    const bot = spawn(w, 'bot', 'b', 40, { x: R - 40, y: 0 });
+    const hunter = spawn(w, 'bot', 'h', 400, { x: R - 300, y: -150 }); // inside and "below"
+    bot.heading = { x: 1, y: 0 };
+    avoidWalls(w, bot, hunter);
+    expect(bot.heading.y).toBeGreaterThan(0); // escapes "up", away from the hunter
+    expect(bot.heading.x).toBeLessThan(0.2);
+  });
+
+  it('leaves bots far from the wall untouched', () => {
+    const w = new World(13);
+    const bot = spawn(w, 'bot', 'b', 40, { x: 100, y: 0 });
+    bot.heading = { x: 1, y: 0 };
+    avoidWalls(w, bot, null);
+    expect(bot.heading).toEqual({ x: 1, y: 0 });
+  });
+
+  it('bots spend almost no time pinned against the wall in a long simulation', () => {
+    const game = new Game(4);
+    let near = 0;
+    let total = 0;
+    for (let i = 0; i < 60 * 40; i++) {
+      game.update(1 / 60);
+      for (const c of game.world.creatures.values()) {
+        if (!c.alive || !c.bot) continue;
+        total++;
+        const gap =
+          CONFIG.arena.radius - Math.hypot(c.pos.x, c.pos.y) - game.world.radiusFor(c.mass) * 0.5;
+        if (gap < 15) near++;
+      }
+    }
+    // Before wall avoidance this was ~3.7%, with single bots stuck for over 10 seconds.
+    expect(near / total).toBeLessThan(0.005);
+  }, 30_000);
 });

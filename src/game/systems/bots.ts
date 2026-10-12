@@ -72,6 +72,42 @@ function steerAway(me: Creature, from: { x: number; y: number }): void {
 }
 
 /**
+ * Keeps bots off the arena wall. Near the edge the outward part of the heading is removed and
+ * replaced by a slide along the wall plus a gentle push inward, choosing the side away from a
+ * pursuer. Without this, a bot fleeing toward the edge pinned itself against the wall for
+ * seconds. Runs every tick (not only when the bot "thinks"), so it reacts in time.
+ */
+export function avoidWalls(world: World, me: Creature, threat: Creature | null): void {
+  const d = Math.hypot(me.pos.x, me.pos.y);
+  if (d === 0) return;
+  const r = world.radiusFor(me.mass);
+  const gap = CONFIG.arena.radius - d - r * 0.5;
+  const margin = r * 1.5 + CONFIG.bots.wallMargin;
+  if (gap >= margin) return;
+
+  const n = { x: me.pos.x / d, y: me.pos.y / d }; // outward normal
+  const urgency = Math.min(1, Math.max(0, 1 - gap / margin));
+  const outward = me.heading.x * n.x + me.heading.y * n.y;
+  if (outward < -0.25) return; // already heading back in
+
+  const t = { x: -n.y, y: n.x }; // tangent
+  let side = Math.sign(me.heading.x * t.x + me.heading.y * t.y);
+  if (threat) {
+    // Slide along the wall away from whoever is chasing us.
+    const toThreat = (threat.pos.x - me.pos.x) * t.x + (threat.pos.y - me.pos.y) * t.y;
+    if (Math.abs(toThreat) > 1) side = -Math.sign(toThreat);
+  }
+  if (side === 0) side = me.id % 2 === 0 ? 1 : -1;
+
+  const inward = 0.25 + urgency * 0.9;
+  const hx = t.x * side * (1 - urgency * 0.4) - n.x * inward;
+  const hy = t.y * side * (1 - urgency * 0.4) - n.y * inward;
+  const len = Math.hypot(hx, hy) || 1;
+  me.heading.x = hx / len;
+  me.heading.y = hy / len;
+}
+
+/**
  * Simple but convincing bot AI: flee the nearest predator, hunt the nearest prey, otherwise
  * drift toward orbs with a wandering heading. Each bot re-thinks a few times per second so
  * 30 bots cost almost nothing and don't react with inhuman precision.
@@ -84,7 +120,14 @@ export function botSystem(world: World, dt: number): void {
     const brain = me.bot;
     if (!brain) continue;
     brain.thinkTimer -= dt;
-    if (brain.thinkTimer > 0) continue;
+    if (brain.thinkTimer > 0) {
+      const threat =
+        brain.state === 'flee' && brain.targetId !== null
+          ? (world.creatures.get(brain.targetId) ?? null)
+          : null;
+      avoidWalls(world, me, threat);
+      continue;
+    }
     brain.thinkTimer = CONFIG.bots.thinkInterval * world.rng.range(0.7, 1.3);
 
     const p = perceive(world, me, creatures);
@@ -96,6 +139,7 @@ export function botSystem(world: World, dt: number): void {
       brain.state = 'flee';
       brain.targetId = p.threat.id;
       steerAway(me, p.threat.pos);
+      avoidWalls(world, me, p.threat);
       // Panic boost when the predator is really close.
       const panic = myR * 3 + world.radiusFor(p.threat.mass) * 1.5;
       // Only cautious bots panic-boost, so prey is catchable more often than not.
