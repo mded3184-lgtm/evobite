@@ -7,6 +7,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:crazygames": "vite build --mode crazygames",
+    "build:gamedistribution": "vite build --mode gamedistribution",
+    "release": "node scripts/release.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",

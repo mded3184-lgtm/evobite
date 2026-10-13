@@ -118,6 +118,9 @@ async function boot(): Promise<void> {
   };
 
   let respawning = false;
+  /** Play was clicked and a pre-roll is running; ignore further clicks. */
+  let starting = false;
+  let prerollShown = false;
   /** Consecutive kills inside the combo window, and when the last one happened. */
   let combo = 0;
   let lastKillAt = -Infinity;
@@ -148,10 +151,26 @@ async function boot(): Promise<void> {
     overlay,
     {
       onPlay: (name) => {
+        if (starting) return;
         sfx.unlock();
         sfx.click();
         game.playerName = name;
         sdk.setItem('evobite.name', name);
+        // GameDistribution requires a pre-roll behind the first Play click of a session.
+        if (sdk.adPolicy.prerollOnPlay && !prerollShown) {
+          prerollShown = true;
+          starting = true;
+          void sdk
+            .showMidgameAd(() => {
+              sfx.suspend();
+            })
+            .then(() => {
+              starting = false;
+              sfx.resume();
+              startRound();
+            });
+          return;
+        }
         startRound();
       },
       onBuy: (skinId) => {
@@ -194,9 +213,9 @@ async function boot(): Promise<void> {
       if (respawning) return;
       respawning = true;
       sfx.unlock();
-      // No ad in the first minutes of a session: early ads hurt retention, and CrazyGames
-      // recommends waiting 3-5 minutes. After that the SDK paces ads itself (max 1 / 3 min).
-      if (playedSeconds < CONFIG.ads.firstAdAfterSec) {
+      // No ad in the first minutes of a session where the platform asks for that (CrazyGames
+      // recommends waiting 3-5 minutes); after that the platform SDK paces ads itself.
+      if (playedSeconds < sdk.adPolicy.firstMidgameAfterSec) {
         respawning = false;
         startRound();
         return;
@@ -217,6 +236,17 @@ async function boot(): Promise<void> {
   hud.setSoundIcon(sfx.muted);
   pauseScreen.setSound(sfx.muted);
   menu.setSound(sfx.muted);
+
+  // The platform may pause the game on its own (e.g. an ad it started). Pause and mute;
+  // the player resumes from the pause menu, right where they left off.
+  sdk.onPauseRequest((paused) => {
+    if (paused) {
+      if (game.phase === 'playing' && !game.isPaused) setPaused(true);
+      sfx.suspend();
+    } else {
+      sfx.resume();
+    }
+  });
 
   // Not Escape: on CrazyGames it exits fullscreen, so it must not double as a game key.
   keyboard.onPress(['KeyP'], () => {

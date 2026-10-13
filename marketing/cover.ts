@@ -1,7 +1,7 @@
 /**
  * Store cover art, drawn with the game's own creature renderer so it matches the game.
- * Open /marketing/cover.html?layout=landscape|portrait|square at the target size and
- * screenshot it (marketing/render-covers.mjs does this for all three CrazyGames formats).
+ * Open /marketing/cover.html?layout=<layout> at the target size and screenshot it
+ * (marketing/render-covers.mjs renders every store format).
  */
 import '@fontsource-variable/nunito';
 import type { BranchId } from '@/game/evolution/tree';
@@ -9,7 +9,13 @@ import { getSkin } from '@/game/skins';
 import { Rng } from '@/core/rng';
 import { drawCreatureArt } from '@/render/creatureArt';
 
-type Layout = 'landscape' | 'portrait' | 'square';
+/**
+ * landscape / portrait / square: CrazyGames covers (also GD 1280x720).
+ * itch: itch.io cover 630x500. banner: GD 1280x550.
+ * icon / icon43 / tiny: GD 512x512, 512x384 and 200x120 thumbnails, which GD wants
+ * without a title (they're too small for it).
+ */
+type Layout = 'landscape' | 'portrait' | 'square' | 'itch' | 'banner' | 'icon' | 'icon43' | 'tiny';
 const layout = (new URLSearchParams(location.search).get('layout') ?? 'landscape') as Layout;
 
 const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -38,7 +44,7 @@ interface Placement {
     rotate: number;
     center?: boolean;
     stack?: boolean;
-  };
+  } | null;
 }
 
 const P: Record<Layout, Placement> = {
@@ -80,6 +86,56 @@ const P: Record<Layout, Placement> = {
       { x: W * 0.86, y: H * 0.79, r: U * 0.055, skin: 'ocean' },
     ],
     title: { left: W * 0.54, top: H * 0.19, size: U * 0.175, rotate: -4, center: true },
+  },
+  itch: {
+    hero: { x: W * 0.56, y: H * 0.7, r: U * 0.24 },
+    dir: norm(1, -0.3),
+    giant: { x: W * 1.06, y: H * 0.05, r: U * 0.5 },
+    prey: [
+      { x: W * 0.86, y: H * 0.52, r: U * 0.075, skin: 'candy' },
+      { x: W * 0.9, y: H * 0.82, r: U * 0.06, skin: 'ocean' },
+      { x: W * 0.14, y: H * 0.86, r: U * 0.05, skin: 'toxic' },
+    ],
+    title: { left: W * 0.5, top: H * 0.1, size: U * 0.2, rotate: -4, center: true },
+  },
+  banner: {
+    hero: { x: W * 0.66, y: H * 0.58, r: H * 0.3 },
+    dir: norm(1, -0.25),
+    giant: { x: W * 1.0, y: -H * 0.1, r: H * 0.7 },
+    prey: [
+      { x: W * 0.86, y: H * 0.5, r: H * 0.08, skin: 'candy' },
+      { x: W * 0.92, y: H * 0.8, r: H * 0.065, skin: 'ocean' },
+      { x: W * 0.45, y: H * 0.85, r: H * 0.05, skin: 'toxic' },
+    ],
+    title: { left: W * 0.06, top: H * 0.3, size: H * 0.25, rotate: -4 },
+  },
+  icon: {
+    hero: { x: W * 0.43, y: H * 0.58, r: U * 0.3 },
+    dir: norm(1, -0.3),
+    giant: { x: W * 1.05, y: -H * 0.02, r: U * 0.42 },
+    prey: [
+      { x: W * 0.87, y: H * 0.76, r: U * 0.085, skin: 'candy' },
+      { x: W * 0.62, y: H * 0.93, r: U * 0.06, skin: 'ocean' },
+    ],
+    title: null,
+  },
+  icon43: {
+    hero: { x: W * 0.44, y: H * 0.6, r: U * 0.3 },
+    dir: norm(1, -0.28),
+    giant: { x: W * 1.03, y: -H * 0.05, r: U * 0.5 },
+    prey: [
+      { x: W * 0.86, y: H * 0.66, r: U * 0.09, skin: 'candy' },
+      { x: W * 0.92, y: H * 0.9, r: U * 0.065, skin: 'ocean' },
+      { x: W * 0.09, y: H * 0.86, r: U * 0.06, skin: 'toxic' },
+    ],
+    title: null,
+  },
+  tiny: {
+    hero: { x: W * 0.45, y: H * 0.56, r: U * 0.36 },
+    dir: norm(1, -0.25),
+    giant: { x: W * 1.02, y: -H * 0.1, r: U * 0.55 },
+    prey: [{ x: W * 0.84, y: H * 0.65, r: U * 0.12, skin: 'candy' }],
+    title: null,
   },
 };
 
@@ -254,7 +310,8 @@ function render(): void {
   ctx.fillStyle = v;
   ctx.fillRect(0, 0, W, H);
 
-  if (title) {
+  if (title && !p.title) title.style.display = 'none';
+  if (title && p.title) {
     const t = p.title;
     title.style.fontSize = `${String(t.size)}px`;
     title.style.top = `${String(t.top)}px`;

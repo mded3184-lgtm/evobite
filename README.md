@@ -34,8 +34,9 @@ No engine, no image assets: TypeScript + Canvas 2D, ~35 KB of JavaScript.
 | Mobile share           | One-finger control, responsive HUD, cards stack vertically on phones.               |
 | Technical limits       | Single ~50 KB bundle, far under the 50 MB initial-download rule.                    |
 
-See [docs/GDD.md](docs/GDD.md) for the full design and [docs/CRAZYGAMES.md](docs/CRAZYGAMES.md)
-for the submission checklist.
+See [docs/GDD.md](docs/GDD.md) for the full design. Store submissions:
+[CrazyGames](docs/CRAZYGAMES.md), [itch.io](docs/itch/listing.md) and
+[GameDistribution](docs/gamedistribution/listing.md).
 
 ## Development
 
@@ -43,8 +44,14 @@ for the submission checklist.
 npm install
 npm run dev        # http://localhost:5173
 npm run check      # typecheck + lint + format + tests
-npm run build      # production bundle in dist/
+npm run build      # plain web build in dist/ (GitHub Pages, itch.io): no SDK, no ads
+npm run pacing     # bot plays the player, reports time to each evolution
+npm run balance    # bots locked to all 16 builds, per-perk results
+GD_GAME_ID=<id> npm run release   # one upload zip per portal in release/
 ```
+
+Each portal gets its own build (`vite build --mode crazygames | gamedistribution`): only that
+portal's SDK ends up in the bundle, picked at build time in `src/sdk/crazygames.ts`.
 
 ### Project layout
 

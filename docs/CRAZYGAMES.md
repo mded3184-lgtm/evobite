@@ -23,7 +23,7 @@ Sources: <https://docs.crazygames.com/requirements/> (gameplay, quality, technic
 - [x] Initial download ≈ 0.3 MB in 8 files (limits: 50 MB, and 20 MB for the mobile homepage).
 - [x] Relative paths (`base: './'`), works inside an iframe.
 - [x] Tested in Chromium (Chrome/Edge). Only standard Canvas 2D and Web Audio APIs are used, nothing browser-specific.
-- [x] SDK v3 loaded with `defer` in `<head>`, so it still runs before the game module but never blocks the first paint; an inline splash shows at once, and boot waits at most 3 s for `init()`. The SDK is skipped when `environment === 'disabled'`.
+- [x] SDK v3 tag added only to the CrazyGames build (`vite build --mode crazygames`, or `npm run release`), with `defer` in `<head>`, so it still runs before the game module but never blocks the first paint; an inline splash shows at once, and boot waits at most 3 s for `init()`. The SDK is skipped when `environment === 'disabled'`.
 - [x] `loadingStart()` / `loadingStop()` around boot. Loading stops once the fonts are in and the lobby is interactive.
 - [x] `gameplayStart()` / `gameplayStop()` on round start, death, pause/resume and around ads.
 - [x] `happytime()` on evolutions and revenge kills.
@@ -45,7 +45,7 @@ Sources: <https://docs.crazygames.com/requirements/> (gameplay, quality, technic
 
 ## Manual steps in the developer portal
 
-1. Upload `evobite-crazygames.zip`, with `index.html` at the root.
+1. Run `npm run release` and upload the contents of `release/evobite-crazygames.zip` (`index.html` at the root).
 2. Open the portal's preview/QA tool and check that the SDK works on the real domain (`environment` should be `crazygames`). This includes the ad flow after 3 minutes.
 3. Set orientation to "both" and mark the game as mobile-friendly.
 4. Choose category and tags from the listing. Don't choose .io or Multiplayer.

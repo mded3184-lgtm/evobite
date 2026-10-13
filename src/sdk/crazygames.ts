@@ -1,5 +1,7 @@
 import { MockSdk } from './mock';
+import { DEFAULT_AD_POLICY } from './types';
 import type { PlatformSdk } from './types';
+import { GameDistributionAdapter } from './gamedistribution';
 
 /**
  * Minimal typing for the parts of the CrazyGames SDK v3 we use.
@@ -49,6 +51,7 @@ const AD_MAX_MS = 45000;
 
 export class CrazyGamesAdapter implements PlatformSdk {
   readonly name = 'crazygames';
+  readonly adPolicy = DEFAULT_AD_POLICY;
   private readonly fallback = new MockSdk();
   private sdk: CrazyGamesSdk | null = null;
 
@@ -72,6 +75,10 @@ export class CrazyGamesAdapter implements PlatformSdk {
     } catch (err) {
       console.warn('CrazyGames SDK failed to init, running without it', err);
     }
+  }
+
+  onPauseRequest(): void {
+    /* CrazyGames ads only run when the game asks for one */
   }
 
   onAudioMuteChange(listener: (muted: boolean) => void): void {
@@ -182,9 +189,19 @@ export class CrazyGamesAdapter implements PlatformSdk {
   }
 }
 
-/** Picks the real adapter when the SDK script is present, the mock otherwise. */
+/**
+ * Picks the adapter for the platform this bundle was built for (`vite build --mode ...`).
+ * The CrazyGames build still falls back to the mock if its SDK script failed to load.
+ */
 export function createPlatformSdk(): PlatformSdk {
-  return typeof window !== 'undefined' && window.CrazyGames
-    ? new CrazyGamesAdapter()
-    : new MockSdk();
+  switch (__PLATFORM__) {
+    case 'crazygames':
+      return typeof window !== 'undefined' && window.CrazyGames
+        ? new CrazyGamesAdapter()
+        : new MockSdk();
+    case 'gamedistribution':
+      return new GameDistributionAdapter(__GD_GAME_ID__);
+    default:
+      return new MockSdk();
+  }
 }

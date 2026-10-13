@@ -1,3 +1,4 @@
+import { DEFAULT_AD_POLICY } from './types';
 import type { PlatformSdk } from './types';
 
 function safeStorage(): Storage | null {
@@ -14,6 +15,7 @@ function safeStorage(): Storage | null {
 /** Used on GitHub Pages, local dev and in tests. Ads are a short no-op. */
 export class MockSdk implements PlatformSdk {
   readonly name = 'mock';
+  readonly adPolicy = DEFAULT_AD_POLICY;
   private readonly memory = new Map<string, string>();
   private readonly storage = safeStorage();
 
@@ -37,6 +39,9 @@ export class MockSdk implements PlatformSdk {
   }
   onAudioMuteChange(listener: (muted: boolean) => void): void {
     listener(false);
+  }
+  onPauseRequest(): void {
+    /* nothing ever pauses the game from outside */
   }
   async showMidgameAd(): Promise<void> {
     /* no ads outside the platform */
