@@ -23,7 +23,7 @@ Sources: <https://docs.crazygames.com/requirements/> (gameplay, quality, technic
 - [x] Initial download ≈ 0.3 MB in 8 files (limits: 50 MB, and 20 MB for the mobile homepage).
 - [x] Relative paths (`base: './'`), works inside an iframe.
 - [x] Tested in Chromium (Chrome/Edge). Only standard Canvas 2D and Web Audio APIs are used, nothing browser-specific.
-- [x] SDK v3 loaded synchronously in `<head>`. The SDK is skipped when `environment === 'disabled'`.
+- [x] SDK v3 loaded with `defer` in `<head>`, so it still runs before the game module but never blocks the first paint; an inline splash shows at once, and boot waits at most 3 s for `init()`. The SDK is skipped when `environment === 'disabled'`.
 - [x] `loadingStart()` / `loadingStop()` around boot. Loading stops once the fonts are in and the lobby is interactive.
 - [x] `gameplayStart()` / `gameplayStop()` on round start, death, pause/resume and around ads.
 - [x] `happytime()` on evolutions and revenge kills.
@@ -55,9 +55,11 @@ Sources: <https://docs.crazygames.com/requirements/> (gameplay, quality, technic
 
 The first submission was rejected for overall quality. Changes made in response:
 
-- First minute: 10 s spawn shield with a countdown, spawn away from giants, a ring of orbs around the spawn, first evolution at mass 25, and a three-line hint card for the first three rounds.
+- First minute: 12 s spawn shield with a countdown, spawn away from giants, smaller bots around new players, a small ring of orbs at the spawn, and a three-line hint card for the first three rounds.
+- Pacing: evolutions at mass 35 / 110 / 260 / 650, checked with `npm run pacing` (a bot playing the player): roughly 12 s, 25 s, ~3 min and ~3–4 min for an unkillable bot. Boost drain is 2%/s and passive decay starts at mass 450.
 - Graphics: nebula background with parallax, glowing food patches, breathing and blinking creatures with expressions (predators grin, prey look worried), open-mouth bites, evolution rings and flash, a glowing arena wall and a darkened outside.
 - Game feel: screen shake and a camera punch on kills, hit-stop, floating mass numbers, kill combos, and a procedural ambient soundtrack.
+- Performance: the background lives in DOM layers moved by compositor transforms (no canvas pixels), orbs are pre-rendered sprites, orb pickup uses a spatial grid, and the renderer drops to 1x resolution and flat orbs by itself when frames stay slow. Measured at 58–60 FPS on every tested size, 51 FPS with a 4x CPU throttle (the pre-rework build managed 33 there).
 
 ## Basic Launch metrics to watch (2 weeks)
 

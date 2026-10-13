@@ -1,6 +1,6 @@
 import { CONFIG } from '@/config';
 import { distSq } from '@/core/vec';
-import type { Creature } from '../types';
+import type { Creature, Orb } from '../types';
 import type { World } from '../world';
 
 /** Returns true when `a` is allowed to eat `b` given both creatures' stats. */
@@ -54,37 +54,97 @@ function absorb(world: World, eater: Creature, prey: Creature): void {
   world.events.emit('creatureEaten', { eater, prey, revenge });
 }
 
+/** World units per grid cell; about the reach of a mid-sized creature. */
+const CELL = 160;
+/** Cells per side, covering the arena plus a margin for orbs nudged past the wall. */
+const GRID_SIZE = Math.ceil((CONFIG.arena.radius * 2 + CELL * 2) / CELL);
+const ORIGIN = CONFIG.arena.radius + CELL;
+
+function cellOf(v: number): number {
+  return Math.min(GRID_SIZE - 1, Math.max(0, Math.floor((v + ORIGIN) / CELL)));
+}
+
+interface OrbGrid {
+  /** Orb indices sorted by cell. */
+  order: Int32Array;
+  /** start[cell]..start[cell + 1] is the cell's slice of `order`. */
+  start: Int32Array;
+}
+
+let scratch: OrbGrid = {
+  order: new Int32Array(0),
+  start: new Int32Array(GRID_SIZE * GRID_SIZE + 1),
+};
+
+/** Counting sort of orbs into cells. Two passes, no per-tick allocation once warmed up. */
+function buildOrbGrid(orbs: readonly Orb[]): OrbGrid {
+  if (scratch.order.length < orbs.length) {
+    scratch = { order: new Int32Array(orbs.length * 2), start: scratch.start };
+  }
+  const { order, start } = scratch;
+  start.fill(0);
+  const cells = new Int32Array(orbs.length);
+  for (let i = 0; i < orbs.length; i++) {
+    const orb = orbs[i];
+    const cell = orb ? cellOf(orb.pos.y) * GRID_SIZE + cellOf(orb.pos.x) : 0;
+    cells[i] = cell;
+    start[cell + 1] = (start[cell + 1] ?? 0) + 1;
+  }
+  for (let i = 1; i < start.length; i++) start[i] = (start[i] ?? 0) + (start[i - 1] ?? 0);
+  const fill = start.slice(0, start.length - 1);
+  for (let i = 0; i < orbs.length; i++) {
+    const cell = cells[i] ?? 0;
+    order[fill[cell] ?? 0] = i;
+    fill[cell] = (fill[cell] ?? 0) + 1;
+  }
+  return scratch;
+}
+
 /**
  * Orb pickup, orb magnet, creature-vs-creature predation and venom drain.
- * Brute force pair checks: with ~30 creatures and ~500 orbs this is well under 20k
- * distance checks per tick, which is nothing for a 60 Hz loop.
+ * Creature pairs are brute force (~30 creatures, under 500 checks); orbs go through a grid.
  */
 export function eatingSystem(world: World, dt: number): void {
   const creatures: Creature[] = [];
   for (const c of world.creatures.values()) if (c.alive) creatures.push(c);
 
-  // Orbs
+  // Orbs, via a uniform grid rebuilt each tick: each creature only tests the orbs in the
+  // cells it can reach, instead of every orb in the arena.
+  const grid = buildOrbGrid(world.orbs);
   for (const c of creatures) {
     if (world.paused && c.kind === 'player') continue;
     const r = world.radiusFor(c.mass);
     const magnet = c.stats.magnetRadius;
     const magnetSq = (r + magnet) * (r + magnet);
-    const pickSq = (r + CONFIG.orbs.radius * 0.3) * (r + CONFIG.orbs.radius * 0.3);
+    const pickR = r + CONFIG.orbs.radius * 0.3;
+    const pickSq = pickR * pickR;
+    const reach = Math.max(pickR, r + magnet);
 
-    for (const orb of world.orbs) {
-      if (!orb.alive) continue;
-      const d2 = distSq(c.pos, orb.pos);
-      if (d2 <= pickSq) {
-        orb.alive = false;
-        c.mass += orb.mass * c.stats.foodMult;
-        c.maxMass = Math.max(c.maxMass, c.mass);
-        c.lastAteAt = world.time;
-        world.events.emit('orbEaten', { eater: c, orb });
-      } else if (magnet > 0 && d2 <= magnetSq) {
-        const d = Math.sqrt(d2) || 1;
-        const pull = 260 * dt;
-        orb.pos.x += ((c.pos.x - orb.pos.x) / d) * pull;
-        orb.pos.y += ((c.pos.y - orb.pos.y) / d) * pull;
+    const x0 = cellOf(c.pos.x - reach);
+    const x1 = cellOf(c.pos.x + reach);
+    const y0 = cellOf(c.pos.y - reach);
+    const y1 = cellOf(c.pos.y + reach);
+    for (let cy = y0; cy <= y1; cy++) {
+      for (let cx = x0; cx <= x1; cx++) {
+        const cell = cy * GRID_SIZE + cx;
+        const end = grid.start[cell + 1] ?? 0;
+        for (let k = grid.start[cell] ?? 0; k < end; k++) {
+          const orb = world.orbs[grid.order[k] ?? 0];
+          if (!orb?.alive) continue;
+          const d2 = distSq(c.pos, orb.pos);
+          if (d2 <= pickSq) {
+            orb.alive = false;
+            c.mass += orb.mass * c.stats.foodMult;
+            c.maxMass = Math.max(c.maxMass, c.mass);
+            c.lastAteAt = world.time;
+            world.events.emit('orbEaten', { eater: c, orb });
+          } else if (magnet > 0 && d2 <= magnetSq) {
+            const d = Math.sqrt(d2) || 1;
+            const pull = 260 * dt;
+            orb.pos.x += ((c.pos.x - orb.pos.x) / d) * pull;
+            orb.pos.y += ((c.pos.y - orb.pos.y) / d) * pull;
+          }
+        }
       }
     }
   }

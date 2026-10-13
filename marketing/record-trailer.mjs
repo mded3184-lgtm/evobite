@@ -40,15 +40,18 @@ function autopilotTick(dt) {
   a.pickerT = 0;
   a.t += dt;
   p.stats.beEatenRatio = 50; // nobody can eat the hero in the trailer
+  // No spawn-shield bubble or first-round hint card: they are UI noise in a store video.
+  p.invulnUntil = 0;
+  document.querySelector('.hud-hint')?.classList.remove('show');
 
   // Mass schedule so the four evolutions land at a steady rhythm.
   const keys = [
     [0, 14],
-    [2.2, 31],
-    [5, 82],
-    [8.2, 205],
-    [11.2, 525],
-    [15, 640],
+    [2.4, 40],
+    [5.2, 125],
+    [8.6, 290],
+    [11.6, 720],
+    [15, 820],
   ];
   let target = keys[keys.length - 1][1];
   for (let i = 1; i < keys.length; i++) {

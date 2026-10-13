@@ -1,7 +1,7 @@
 import type { Messages } from './en';
 
 export const tr: Messages = {
-  'lobby.tagline': 'Ye. Büyü. Her 30 saniyede ne olacağını sen seç.',
+  'lobby.tagline': 'Ye. Büyü. Her aşamada ne olacağını sen seç.',
   'lobby.nickname': 'takma ad',
   'lobby.play': 'Oyna',
   'lobby.skins': 'Görünümler',

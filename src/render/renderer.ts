@@ -9,7 +9,6 @@ import { Camera } from './camera';
 import { drawCreatureArt } from './creatureArt';
 import { Particles } from './particles';
 
-const BG = '#0b1020';
 /** Background camera in the lobby zooms as if following a creature of at most this mass. */
 const MENU_ZOOM_MASS = 150;
 /** Camera pulls out by this factor while the player boosts, to sell the speed. */
@@ -22,6 +21,12 @@ const FONT = "'Nunito Variable', 'Nunito', system-ui, -apple-system, Segoe UI, R
 const TILE = 1400;
 /** The nebula scrolls slower than the arena, which reads as depth. */
 const PARALLAX = 0.4;
+/** Nebula tile size in pixels; one tile spans TILE world units on screen. */
+const TILE_PX = 512;
+/** Orb sprite size in device pixels; big enough for the largest orb glow at DPR 2. */
+const ORB_SPRITE_PX = 128;
+/** Glow radius as a multiple of the orb's body radius. */
+const ORB_GLOW = 2.3;
 
 interface Shake {
   time: number;
@@ -57,8 +62,25 @@ export class Renderer {
   readonly particles: Particles;
   private readonly ctx: CanvasRenderingContext2D;
   private dpr = 1;
-  private nebula: CanvasPattern | null = null;
-  private vignette: CanvasGradient | null = null;
+  /**
+   * The background (colour, parallax nebula, vignette) lives in DOM layers behind the
+   * transparent canvas. Moving them is a compositor transform, so the background costs no
+   * canvas pixels at all: painting it into the canvas every frame halved the frame rate on
+   * machines without GPU rasterization.
+   */
+  private readonly backdrop: HTMLDivElement;
+  private readonly nebula: HTMLDivElement;
+  private nebulaScale = 0;
+  /** Pre-rendered glowing orb per hue bucket, so each orb is one cheap blit. */
+  private readonly orbSprites: HTMLCanvasElement[] = [];
+  /**
+   * Auto quality: when frames stay slow for a couple of seconds, drop to 1x resolution and
+   * flat orbs. One-way for the session, so the picture never flickers between modes.
+   */
+  private lowQuality = false;
+  private frameEma = 1000 / 60;
+  private lastDrawAt = 0;
+  private slowMs = 0;
   private pulse = 0;
   private shake: Shake = { time: 0, duration: 0, amplitude: 0 };
   /** Camera zoom-in punch, 1 right after a kill, decaying to 0. */
@@ -71,11 +93,21 @@ export class Renderer {
     private readonly canvas: HTMLCanvasElement,
     private readonly game: Game,
   ) {
-    const ctx = canvas.getContext('2d', { alpha: false });
+    const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D context unavailable');
     this.ctx = ctx;
     this.particles = new Particles(game.world.rng);
-    this.nebula = this.makeNebula();
+    this.backdrop = document.createElement('div');
+    this.backdrop.className = 'backdrop';
+    this.nebula = document.createElement('div');
+    this.nebula.className = 'backdrop-nebula';
+    const tile = this.makeNebulaTile();
+    if (tile) this.nebula.style.backgroundImage = `url(${tile.toDataURL()})`;
+    const vignette = document.createElement('div');
+    vignette.className = 'backdrop-vignette';
+    this.backdrop.append(this.nebula, vignette);
+    canvas.parentElement?.insertBefore(this.backdrop, canvas);
+    this.makeOrbSprites();
     this.resize();
     window.addEventListener('resize', () => {
       this.resize();
@@ -126,23 +158,13 @@ export class Renderer {
   }
 
   resize(): void {
-    this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.dpr = Math.min(this.lowQuality ? 1 : 2, window.devicePixelRatio || 1);
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
     this.canvas.width = Math.floor(w * this.dpr);
     this.canvas.height = Math.floor(h * this.dpr);
     this.camera.resize(w, h);
-    const v = this.ctx.createRadialGradient(
-      w / 2,
-      h / 2,
-      Math.min(w, h) * 0.35,
-      w / 2,
-      h / 2,
-      Math.max(w, h) * 0.75,
-    );
-    v.addColorStop(0, 'rgba(0,0,0,0)');
-    v.addColorStop(1, 'rgba(0,0,0,0.45)');
-    this.vignette = v;
+    this.nebulaScale = 0; // force a backdrop resize
   }
 
   screenToWorld(p: Vec2): Vec2 {
@@ -250,12 +272,32 @@ export class Renderer {
     if (p) this.camera.follow(p.pos, p.mass, 0, true);
   }
 
+  /** True once the renderer has switched itself to the cheaper mode. */
+  get isLowQuality(): boolean {
+    return this.lowQuality;
+  }
+
+  private trackFrameTime(): void {
+    const now = performance.now();
+    const gap = now - this.lastDrawAt;
+    this.lastDrawAt = now;
+    // Ignore long gaps: tab switches, ads and manual stepping are not slow frames.
+    if (gap <= 0 || gap > 250 || this.lowQuality) return;
+    this.frameEma += (gap - this.frameEma) * 0.05;
+    this.slowMs = this.frameEma > 24 ? this.slowMs + gap : 0;
+    if (this.slowMs > 2000) {
+      this.lowQuality = true;
+      this.resize();
+    }
+  }
+
   draw(): void {
+    this.trackFrameTime();
     const ctx = this.ctx;
     const cam = this.camera;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.fillStyle = BG;
-    ctx.fillRect(0, 0, cam.width, cam.height);
+    ctx.clearRect(0, 0, cam.width, cam.height);
+    this.updateBackdrop();
 
     // Screen shake: offset everything drawn in world space, not the HUD.
     const sh = this.shake;
@@ -265,7 +307,6 @@ export class Renderer {
       ctx.translate(Math.sin(tm * 61) * k, Math.cos(tm * 47) * k);
     }
 
-    this.drawNebula();
     this.drawGrid();
     this.drawArena();
     this.drawOrbs();
@@ -275,10 +316,6 @@ export class Renderer {
     this.drawTexts();
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    if (this.vignette) {
-      ctx.fillStyle = this.vignette;
-      ctx.fillRect(0, 0, cam.width, cam.height);
-    }
     if (this.flash.alpha > 0) {
       ctx.globalAlpha = this.flash.alpha;
       ctx.fillStyle = this.flash.color;
@@ -296,8 +333,8 @@ export class Renderer {
    * One repeating tile of soft coloured clouds and tiny drifting specks, drawn once.
    * Blobs near an edge are drawn again on the opposite side so the tile wraps seamlessly.
    */
-  private makeNebula(): CanvasPattern | null {
-    const size = 512; // pixels per tile; scaled to TILE world units when drawn
+  private makeNebulaTile(): HTMLCanvasElement | null {
+    const size = TILE_PX;
     const tile = document.createElement('canvas');
     tile.width = size;
     tile.height = size;
@@ -338,22 +375,59 @@ export class Renderer {
       c.fill();
     }
     c.globalAlpha = 1;
-    return this.ctx.createPattern(tile, 'repeat');
+    return tile;
   }
 
-  private drawNebula(): void {
-    if (!this.nebula) return;
-    const ctx = this.ctx;
+  /**
+   * Moves the nebula layer for parallax. Only the transform changes per frame; the layer
+   * is resized (a repaint) only when the zoom has drifted noticeably.
+   */
+  private updateBackdrop(): void {
     const cam = this.camera;
-    const k = (cam.scale * TILE) / 512;
-    const tx = cam.width / 2 - cam.pos.x * PARALLAX * cam.scale;
-    const ty = cam.height / 2 - cam.pos.y * PARALLAX * cam.scale;
-    ctx.save();
-    ctx.translate(tx, ty);
-    ctx.scale(k, k);
-    ctx.fillStyle = this.nebula;
-    ctx.fillRect(-tx / k, -ty / k, cam.width / k, cam.height / k);
-    ctx.restore();
+    const k = (cam.scale * TILE) / TILE_PX; // css px per tile px
+    if (Math.abs(k - this.nebulaScale) > this.nebulaScale * 0.04) {
+      this.nebulaScale = k;
+      const tileCss = TILE_PX * k;
+      this.nebula.style.backgroundSize = `${String(tileCss)}px ${String(tileCss)}px`;
+      this.nebula.style.width = `${String(cam.width + tileCss * 2)}px`;
+      this.nebula.style.height = `${String(cam.height + tileCss * 2)}px`;
+    }
+    const tileCss = TILE_PX * this.nebulaScale;
+    const ox = cam.width / 2 - cam.pos.x * PARALLAX * cam.scale;
+    const oy = cam.height / 2 - cam.pos.y * PARALLAX * cam.scale;
+    const x = (((ox % tileCss) + tileCss) % tileCss) - tileCss;
+    const y = (((oy % tileCss) + tileCss) % tileCss) - tileCss;
+    this.nebula.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+  }
+
+  /** A soft glow and a solid core per hue bucket, baked once. */
+  private makeOrbSprites(): void {
+    const size = ORB_SPRITE_PX;
+    const half = size / 2;
+    const core = half / ORB_GLOW;
+    for (let b = 0; b < ORB_HUE_BUCKETS; b++) {
+      const hue = (b * 360) / ORB_HUE_BUCKETS;
+      const sprite = document.createElement('canvas');
+      sprite.width = size;
+      sprite.height = size;
+      const c = sprite.getContext('2d');
+      if (c) {
+        const g = c.createRadialGradient(half, half, core * 0.6, half, half, half);
+        g.addColorStop(0, `hsla(${String(hue)}, 90%, 65%, 0.35)`);
+        g.addColorStop(1, `hsla(${String(hue)}, 90%, 65%, 0)`);
+        c.fillStyle = g;
+        c.fillRect(0, 0, size, size);
+        c.fillStyle = `hsl(${String(hue)} 85% 66%)`;
+        c.beginPath();
+        c.arc(half, half, core, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = 'rgba(255,255,255,0.35)';
+        c.beginPath();
+        c.arc(half - core * 0.3, half - core * 0.3, core * 0.35, 0, Math.PI * 2);
+        c.fill();
+      }
+      this.orbSprites.push(sprite);
+    }
   }
 
   private drawGrid(): void {
@@ -386,9 +460,11 @@ export class Renderer {
     const cam = this.camera;
     const c = cam.worldToScreen({ x: 0, y: 0 });
     const r = CONFIG.arena.radius * cam.scale;
-    // Skip the outside fill when the wall is nowhere near the screen.
-    const corner = Math.hypot(cam.width, cam.height);
-    if (Math.hypot(c.x - cam.width / 2, c.y - cam.height / 2) + corner > r) {
+    // Skip everything while the whole screen is inside the arena, which is most of the time:
+    // the outside fill covers the full screen, so it must only run when the wall is in view.
+    const halfDiagonal = Math.hypot(cam.width, cam.height) / 2;
+    const glow = 34 * cam.scale;
+    if (Math.hypot(c.x - cam.width / 2, c.y - cam.height / 2) + halfDiagonal > r - glow) {
       ctx.fillStyle = 'rgba(2, 4, 12, 0.6)';
       ctx.beginPath();
       ctx.rect(0, 0, cam.width, cam.height);
@@ -415,9 +491,32 @@ export class Renderer {
     const s = cam.scale;
     const half = cam.visibleHalf(20);
     const time = this.game.world.time;
-    // One path per colour bucket: a soft glow pass and a core pass, ~24 fills per frame.
+    if (this.lowQuality) {
+      this.drawFlatOrbs();
+      return;
+    }
+    for (const orb of this.game.world.orbs) {
+      if (!orb.alive) continue;
+      if (Math.abs(orb.pos.x - cam.pos.x) > half.x || Math.abs(orb.pos.y - cam.pos.y) > half.y) {
+        continue;
+      }
+      const sprite = this.orbSprites[Math.floor(((orb.hue % 360) / 360) * ORB_HUE_BUCKETS)];
+      if (!sprite) continue;
+      const p = cam.worldToScreen(orb.pos);
+      // Gentle pulse, each orb on its own phase, so the food looks alive.
+      const pulse = 1 + 0.1 * Math.sin(time * 2.6 + orb.id * 0.9);
+      const g = Math.max(1.5, orb.radius * s * pulse) * ORB_GLOW;
+      ctx.drawImage(sprite, p.x - g, p.y - g, g * 2, g * 2);
+    }
+  }
+
+  /** Low-quality orbs: no glow, one batched path per colour, about 12 fills per frame. */
+  private drawFlatOrbs(): void {
+    const ctx = this.ctx;
+    const cam = this.camera;
+    const s = cam.scale;
+    const half = cam.visibleHalf(20);
     const cores: Path2D[] = [];
-    const glows: Path2D[] = [];
     for (const orb of this.game.world.orbs) {
       if (!orb.alive) continue;
       if (Math.abs(orb.pos.x - cam.pos.x) > half.x || Math.abs(orb.pos.y - cam.pos.y) > half.y) {
@@ -425,23 +524,11 @@ export class Renderer {
       }
       const bucket = Math.floor(((orb.hue % 360) / 360) * ORB_HUE_BUCKETS);
       const core = (cores[bucket] ??= new Path2D());
-      const glow = (glows[bucket] ??= new Path2D());
       const p = cam.worldToScreen(orb.pos);
-      // Gentle pulse, each orb on its own phase, so the food looks alive.
-      const pulse = 1 + 0.1 * Math.sin(time * 2.6 + orb.id * 0.9);
-      const r = Math.max(1.5, orb.radius * s * pulse);
+      const r = Math.max(1.5, orb.radius * s);
       core.moveTo(p.x + r, p.y);
       core.arc(p.x, p.y, r, 0, Math.PI * 2);
-      const g = r * 2.3;
-      glow.moveTo(p.x + g, p.y);
-      glow.arc(p.x, p.y, g, 0, Math.PI * 2);
     }
-    ctx.globalAlpha = 0.16;
-    glows.forEach((path, bucket) => {
-      ctx.fillStyle = `hsl(${String((bucket * 360) / ORB_HUE_BUCKETS)} 90% 65%)`;
-      ctx.fill(path);
-    });
-    ctx.globalAlpha = 1;
     cores.forEach((path, bucket) => {
       ctx.fillStyle = `hsl(${String((bucket * 360) / ORB_HUE_BUCKETS)} 85% 66%)`;
       ctx.fill(path);

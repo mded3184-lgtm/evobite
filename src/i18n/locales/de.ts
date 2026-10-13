@@ -1,7 +1,7 @@
 import type { Messages } from './en';
 
 export const de: Messages = {
-  'lobby.tagline': 'Friss. Wachse. Alle 30 Sekunden wählst du, was du wirst.',
+  'lobby.tagline': 'Friss. Wachse. Mit jeder Stufe wählst du, was du wirst.',
   'lobby.nickname': 'Spielername',
   'lobby.play': 'Spielen',
   'lobby.skins': 'Skins',

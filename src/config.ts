@@ -14,9 +14,9 @@ export const CONFIG = {
     /** Target FPS-independent turning smoothness (higher = snappier). */
     steerLambda: 9,
     /** Spawn shield: nothing can eat a fresh player for this long, and bots don't hunt them. */
-    graceSec: 10,
+    graceSec: 12,
     /** Orbs sprinkled around the spawn point so the first seconds are about growing. */
-    welcomeOrbs: 26,
+    welcomeOrbs: 10,
     welcomeRadius: 260,
   },
   creature: {
@@ -33,8 +33,8 @@ export const CONFIG = {
     /** Mass retained from eaten creature (rest is "lost" to keep the curve sane). */
     absorbFraction: 0.8,
     /** Mass lost per second as a fraction, applied above decayStartMass. */
-    decayRate: 0.01,
-    decayStartMass: 300,
+    decayRate: 0.008,
+    decayStartMass: 450,
     /**
      * Decay speeds up with size: rate x (1 + (mass / decaySoftCap)^2). Barely noticeable at
      * normal sizes, very steep for giants, so nobody grows to fill the arena.
@@ -42,7 +42,7 @@ export const CONFIG = {
     decaySoftCap: 1000,
   },
   orbs: {
-    count: 1700,
+    count: 1250,
     /** Share of respawned orbs placed next to an existing orb, so food forms patches. */
     clusterChance: 0.6,
     clusterSpread: 70,
@@ -60,10 +60,10 @@ export const CONFIG = {
     /** How often bots re-evaluate their intent, seconds. */
     thinkInterval: 0.25,
     /** Starting mass range so the arena has a pecking order from second one. */
-    spawnMassMin: 8,
-    spawnMassMax: 60,
+    spawnMassMin: 6,
+    spawnMassMax: 45,
     /** Chance a respawning bot starts big-ish, so there is always something to fear. */
-    eliteChance: 0.15,
+    eliteChance: 0.1,
     eliteMassMin: 120,
     eliteMassMax: 380,
     /** Bots start steering off the wall this far from it (plus 1.5x their radius). */
@@ -83,9 +83,9 @@ export const CONFIG = {
     /** Speed multiplier while boosting. */
     speedMult: 1.65,
     /** Mass lost per second as a fraction of current mass... */
-    drainRate: 0.03,
+    drainRate: 0.02,
     /** ...but never less than this many mass points per second. */
-    minDrainPerSec: 1.2,
+    minDrainPerSec: 1,
     /** Boosting stops below this mass so a hatchling can't burn itself to nothing. */
     minMass: 16,
     /** Fraction of burned mass dropped behind as small orbs others can eat. */
@@ -97,7 +97,7 @@ export const CONFIG = {
   },
   evolution: {
     /** Mass thresholds at which a branch choice is offered. */
-    thresholds: [25, 70, 180, 450] as const,
+    thresholds: [35, 110, 260, 650] as const,
   },
   feel: {
     /** Simulation freeze when the player eats a creature, seconds. Sells the impact. */

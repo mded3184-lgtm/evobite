@@ -1,7 +1,7 @@
 import type { Messages } from './en';
 
 export const id: Messages = {
-  'lobby.tagline': 'Makan. Tumbuh. Setiap 30 detik, pilih kamu jadi apa.',
+  'lobby.tagline': 'Makan. Tumbuh. Di setiap tahap, pilih kamu jadi apa.',
   'lobby.nickname': 'nama panggilan',
   'lobby.play': 'Main',
   'lobby.skins': 'Skin',

@@ -156,3 +156,34 @@ describe('eatingSystem', () => {
     expect(far.pos.x).toBeLessThan(before);
   });
 });
+
+describe('orb pickup through the spatial grid', () => {
+  it('eats orbs just inside reach across cell borders, and leaves ones just outside', () => {
+    const w = worldWith();
+    // Straddle a cell border (cells are 160 units; the arena origin is offset).
+    const c = spawn(w, 'bot', 'eater', 50, { x: 159.5, y: -0.5 });
+    const reach = w.radiusFor(c.mass) + CONFIG.orbs.radius * 0.3;
+    const near = w.spawnOrb({ x: c.pos.x + reach - 0.5, y: c.pos.y });
+    const nearDiag = w.spawnOrb({ x: c.pos.x - reach * 0.7, y: c.pos.y - reach * 0.7 });
+    const far = w.spawnOrb({ x: c.pos.x + reach + 2, y: c.pos.y });
+    const before = c.mass;
+    eatingSystem(w, 1 / 60);
+    expect(near.alive).toBe(false);
+    expect(nearDiag.alive).toBe(false);
+    expect(far.alive).toBe(true);
+    expect(c.mass).toBeGreaterThan(before);
+  });
+
+  it('pulls orbs inside a grazer magnet even when they sit in a neighbouring cell', () => {
+    const w = worldWith();
+    const c = spawn(w, 'bot', 'grazer', 50, { x: 0, y: 0 });
+    c.path = ['bulk', 'venom', 'grazer'];
+    c.stats = statsForPath(c.path);
+    const r = w.radiusFor(c.mass);
+    const orb = w.spawnOrb({ x: 0, y: r + c.stats.magnetRadius - 2 });
+    const y0 = orb.pos.y;
+    eatingSystem(w, 1 / 60);
+    expect(orb.alive).toBe(true);
+    expect(orb.pos.y).toBeLessThan(y0);
+  });
+});

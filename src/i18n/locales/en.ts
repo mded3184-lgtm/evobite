@@ -3,7 +3,7 @@
  * Placeholders like {name} are filled at runtime; keep them identical in translations.
  */
 export const en = {
-  'lobby.tagline': 'Eat. Grow. Every 30 seconds, choose what you become.',
+  'lobby.tagline': 'Eat. Grow. At every stage, choose what you become.',
   'lobby.nickname': 'nickname',
   'lobby.play': 'Play',
   'lobby.skins': 'Skins',

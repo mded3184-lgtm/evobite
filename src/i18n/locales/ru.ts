@@ -1,7 +1,7 @@
 import type { Messages } from './en';
 
 export const ru: Messages = {
-  'lobby.tagline': 'Ешь. Расти. Каждые 30 секунд выбирай, кем стать.',
+  'lobby.tagline': 'Ешь. Расти. На каждом этапе выбирай, кем стать.',
   'lobby.nickname': 'никнейм',
   'lobby.play': 'Играть',
   'lobby.skins': 'Скины',

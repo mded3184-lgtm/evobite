@@ -55,6 +55,26 @@ select {
   font-family: inherit;
 }
 
+.backdrop {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0b1020;
+  pointer-events: none;
+}
+.backdrop-nebula {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-repeat: repeat;
+  will-change: transform;
+}
+.backdrop-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.45) 100%);
+}
+
 #game {
   position: fixed;
   inset: 0;

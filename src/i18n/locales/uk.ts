@@ -1,7 +1,7 @@
 import type { Messages } from './en';
 
 export const uk: Messages = {
-  'lobby.tagline': 'Їж. Рости. Кожні 30 секунд обирай, ким стати.',
+  'lobby.tagline': 'Їж. Рости. На кожному етапі обирай, ким стати.',
   'lobby.nickname': 'нікнейм',
   'lobby.play': 'Грати',
   'lobby.skins': 'Скіни',
