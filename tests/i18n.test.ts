@@ -76,8 +76,8 @@ describe('perk text', () => {
       expect(branchShort('swift'), code).toContain(p15);
       expect(branchBlurb('armor'), code).toContain(pct(0.5));
       expect(branchShort('hunter'), code).toContain(pct(0.08));
-      expect(branchBlurb('titan'), code).toContain(pct(0.6));
-      expect(branchBlurb('venom'), code).toContain(pct(0.022));
+      expect(branchBlurb('titan'), code).toContain(pct(0.4));
+      expect(branchBlurb('venom'), code).toContain(pct(0.014));
       expect(branchBlurb('grazer')).not.toMatch(/\{\w+\}/);
     }
   });

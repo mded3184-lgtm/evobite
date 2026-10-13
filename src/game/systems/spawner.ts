@@ -8,10 +8,12 @@ import type { World } from '../world';
  * after a short delay so the population stays at the configured count.
  */
 export function spawnerSystem(world: World): void {
-  // Orbs: swap-remove dead ones, then top up.
+  // Orbs: expire old ones, swap-remove dead ones, then top up. Expiry keeps the food spread
+  // matching where it spawns; otherwise food nobody eats (near the wall) piles up forever.
   const orbs = world.orbs;
   for (let i = orbs.length - 1; i >= 0; i--) {
     const orb = orbs[i];
+    if (orb?.alive && orb.expiresAt <= world.time) orb.alive = false;
     if (orb && !orb.alive) {
       const last = orbs[orbs.length - 1];
       if (last) orbs[i] = last;

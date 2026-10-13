@@ -1,7 +1,7 @@
 import { CONFIG } from '@/config';
 import type { Vec2 } from '@/core/vec';
 import type { Game } from '@/game/game';
-import type { Creature } from '@/game/types';
+import type { Creature, Orb } from '@/game/types';
 import { canEat } from '@/game/systems/eating';
 import { getSkin } from '@/game/skins';
 import { t } from '@/i18n';
@@ -51,6 +51,19 @@ interface Ring {
   life: number;
   maxLife: number;
   width: number;
+}
+
+/** 0..1 size factor: a quick overshooting pop on spawn, a shrink over the last second. */
+function orbLifeScale(orb: Orb, time: number): number {
+  const age = time - orb.bornAt;
+  const left = orb.expiresAt - time;
+  let k = 1;
+  if (age < 0.35) {
+    const t = Math.max(0, age / 0.35);
+    k = t < 0.7 ? (t / 0.7) * 1.15 : 1.15 - ((t - 0.7) / 0.3) * 0.15;
+  }
+  if (left < 1) k *= Math.max(0, left);
+  return k;
 }
 
 /**
@@ -503,9 +516,12 @@ export class Renderer {
       const sprite = this.orbSprites[Math.floor(((orb.hue % 360) / 360) * ORB_HUE_BUCKETS)];
       if (!sprite) continue;
       const p = cam.worldToScreen(orb.pos);
-      // Gentle pulse, each orb on its own phase, so the food looks alive.
+      // Gentle pulse, each orb on its own phase, so the food looks alive; pops in when it
+      // appears and shrinks away in its last second.
       const pulse = 1 + 0.1 * Math.sin(time * 2.6 + orb.id * 0.9);
-      const g = Math.max(1.5, orb.radius * s * pulse) * ORB_GLOW;
+      const life = orbLifeScale(orb, time);
+      if (life <= 0.02) continue;
+      const g = Math.max(1.5, orb.radius * s * pulse * life) * ORB_GLOW;
       ctx.drawImage(sprite, p.x - g, p.y - g, g * 2, g * 2);
     }
   }
@@ -525,7 +541,7 @@ export class Renderer {
       const bucket = Math.floor(((orb.hue % 360) / 360) * ORB_HUE_BUCKETS);
       const core = (cores[bucket] ??= new Path2D());
       const p = cam.worldToScreen(orb.pos);
-      const r = Math.max(1.5, orb.radius * s);
+      const r = Math.max(1.5, orb.radius * s * orbLifeScale(orb, this.game.world.time));
       core.moveTo(p.x + r, p.y);
       core.arc(p.x, p.y, r, 0, Math.PI * 2);
     }

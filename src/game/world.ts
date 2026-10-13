@@ -6,6 +6,9 @@ import type { BranchId } from './evolution/tree';
 import { statsForPath } from './evolution/stats';
 import type { Creature, CreatureKind, Orb, RoundStats } from './types';
 
+/** Radial exponent for food spawns: a little more food toward the busy middle. */
+const FOOD_SPREAD = 0.62;
+
 export interface GameEvents extends Record<string, unknown> {
   orbEaten: { eater: Creature; orb: Orb };
   creatureEaten: { eater: Creature; prey: Creature; revenge: boolean };
@@ -54,8 +57,12 @@ export class World {
     return Math.max(CONFIG.creature.minSpeed, base) * c.stats.speedMult * boost;
   }
 
-  randomPointInArena(margin = 80): Vec2 {
-    const r = (CONFIG.arena.radius - margin) * Math.sqrt(this.rng.next());
+  /**
+   * Random point inside the arena. `spread` 0.5 is uniform by area; higher values lean
+   * toward the centre (food uses that to make up for being eaten fastest in the middle).
+   */
+  randomPointInArena(margin = 80, spread = 0.5): Vec2 {
+    const r = (CONFIG.arena.radius - margin) * Math.pow(this.rng.next(), spread);
     const a = this.rng.next() * Math.PI * 2;
     return { x: Math.cos(a) * r, y: Math.sin(a) * r };
   }
@@ -101,28 +108,36 @@ export class World {
     return c;
   }
 
+  /** Food patch centres; lazily placed, then moved one at a time as they get used. */
+  private readonly patches: Vec2[] = [];
+
   /**
-   * Most orbs respawn next to an existing one, so food gathers in patches the player can
-   * graze through instead of an even sprinkle over the whole arena.
+   * Most orbs spawn in patches around centres spread evenly over the arena, so food gathers
+   * in clumps worth grazing through. Patches used to grow around existing orbs, which let
+   * uneaten food by the wall (bots keep away from it) breed more food there: the outer rim
+   * ended up with 7x the average density and the middle with a tenth.
    */
   private orbSpawnPoint(): Vec2 {
-    const orbs = this.orbs;
-    if (orbs.length > 0 && this.rng.chance(CONFIG.orbs.clusterChance)) {
-      const near = orbs[this.rng.int(0, orbs.length - 1)];
-      if (near?.alive) {
+    const { clusterChance, clusterSpread, patchCount, patchMoveChance, wallMargin } = CONFIG.orbs;
+    const patchMargin = wallMargin + clusterSpread;
+    if (this.patches.length === 0) {
+      for (let i = 0; i < patchCount; i++) {
+        this.patches.push(this.randomPointInArena(patchMargin, FOOD_SPREAD));
+      }
+    }
+    if (this.rng.chance(clusterChance)) {
+      const index = this.rng.int(0, this.patches.length - 1);
+      const centre = this.patches[index];
+      if (centre) {
         const a = this.rng.next() * Math.PI * 2;
-        const d = CONFIG.orbs.clusterSpread * Math.sqrt(this.rng.next());
-        const p = { x: near.pos.x + Math.cos(a) * d, y: near.pos.y + Math.sin(a) * d };
-        const limit = CONFIG.arena.radius - 20;
-        const len = Math.hypot(p.x, p.y);
-        if (len > limit) {
-          p.x *= limit / len;
-          p.y *= limit / len;
-        }
+        const d = clusterSpread * Math.sqrt(this.rng.next());
+        const p = { x: centre.x + Math.cos(a) * d, y: centre.y + Math.sin(a) * d };
+        if (this.rng.chance(patchMoveChance))
+          this.patches[index] = this.randomPointInArena(patchMargin);
         return p;
       }
     }
-    return this.randomPointInArena(20);
+    return this.randomPointInArena(wallMargin, FOOD_SPREAD);
   }
 
   spawnOrb(pos?: Vec2, size?: { mass: number; radius: number; hue: number }): Orb {
@@ -134,6 +149,8 @@ export class World {
       radius: size?.radius ?? (big ? CONFIG.orbs.bigRadius : CONFIG.orbs.radius),
       hue: size?.hue ?? this.rng.int(0, 359),
       alive: true,
+      bornAt: this.time,
+      expiresAt: this.time + this.rng.range(CONFIG.orbs.lifeMinSec, CONFIG.orbs.lifeMaxSec),
     };
     this.orbs.push(orb);
     return orb;

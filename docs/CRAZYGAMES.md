@@ -56,7 +56,8 @@ Sources: <https://docs.crazygames.com/requirements/> (gameplay, quality, technic
 The first submission was rejected for overall quality. Changes made in response:
 
 - First minute: 12 s spawn shield with a countdown, spawn away from giants, smaller bots around new players, a small ring of orbs at the spawn, and a three-line hint card for the first three rounds.
-- Pacing: evolutions at mass 35 / 110 / 260 / 650, checked with `npm run pacing` (a bot playing the player): roughly 12 s, 25 s, ~3 min and ~3–4 min for an unkillable bot. Boost drain is 2%/s and passive decay starts at mass 450.
+- Pacing: evolutions at mass 35 / 120 / 320 / 800, checked with `npm run pacing` (a bot playing the player): roughly 17 s, 33 s, ~1.3 min and ~2.7 min for an unkillable bot. Kills give 60% of the prey's mass, boost drain is 2%/s and passive decay starts at mass 450.
+- Food: 700 orbs in patches around evenly spread centres that drift, plus single orbs anywhere, never within 180 units of the wall; each orb lives 25–50 s. Before, uneaten food by the wall bred more food there (7x average density at the rim, a tenth in the middle); now every band of the arena is within ~1.5x of even.
 - Graphics: nebula background with parallax, glowing food patches, breathing and blinking creatures with expressions (predators grin, prey look worried), open-mouth bites, evolution rings and flash, a glowing arena wall and a darkened outside.
 - Game feel: screen shake and a camera punch on kills, hit-stop, floating mass numbers, kill combos, and a procedural ambient soundtrack.
 - Performance: the background lives in DOM layers moved by compositor transforms (no canvas pixels), orbs are pre-rendered sprites, orb pickup uses a spatial grid, and the renderer drops to 1x resolution and flat orbs by itself when frames stay slow. Measured at 58–60 FPS on every tested size, 51 FPS with a 4x CPU throttle (the pre-rework build managed 33 there).

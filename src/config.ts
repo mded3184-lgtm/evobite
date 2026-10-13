@@ -31,7 +31,7 @@ export const CONFIG = {
     /** Prey center must be inside attacker circle by this fraction of prey radius. */
     eatOverlap: 0.4,
     /** Mass retained from eaten creature (rest is "lost" to keep the curve sane). */
-    absorbFraction: 0.8,
+    absorbFraction: 0.6,
     /** Mass lost per second as a fraction, applied above decayStartMass. */
     decayRate: 0.008,
     decayStartMass: 450,
@@ -42,10 +42,21 @@ export const CONFIG = {
     decaySoftCap: 1000,
   },
   orbs: {
-    count: 1250,
-    /** Share of respawned orbs placed next to an existing orb, so food forms patches. */
-    clusterChance: 0.6,
-    clusterSpread: 70,
+    count: 700,
+    /**
+     * Share of orbs spawned in a food patch rather than anywhere. Patches sit around fixed
+     * centres spread evenly over the arena, which drift to a new spot now and then.
+     */
+    clusterChance: 0.55,
+    clusterSpread: 110,
+    patchCount: 36,
+    /** Chance per patch spawn that the patch moves somewhere else afterwards. */
+    patchMoveChance: 0.02,
+    /** Orbs never spawn closer than this to the wall, where nobody grazes. */
+    wallMargin: 180,
+    /** Orb lifetime range, seconds. Spread out so orbs never expire in waves. */
+    lifeMinSec: 25,
+    lifeMaxSec: 50,
     mass: 2,
     radius: 7,
     /** Big orbs: rarer, juicier, slightly off-center from spawn clusters. */
@@ -97,7 +108,7 @@ export const CONFIG = {
   },
   evolution: {
     /** Mass thresholds at which a branch choice is offered. */
-    thresholds: [35, 110, 260, 650] as const,
+    thresholds: [35, 120, 320, 800] as const,
   },
   feel: {
     /** Simulation freeze when the player eats a creature, seconds. Sells the impact. */

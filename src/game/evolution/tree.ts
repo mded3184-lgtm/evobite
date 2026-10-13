@@ -41,7 +41,7 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Venom',
     blurb: 'Creatures touching you slowly lose mass. You gain half of it.',
     tags: ['drain on touch'],
-    patch: { venomDps: 0.022 },
+    patch: { venomDps: 0.014 },
   },
   armor: {
     id: 'armor',
@@ -73,7 +73,7 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Apex',
     blurb: 'Eat anything 5% smaller than you. Absorb 30% more of it.',
     tags: ['eat at 5%', '+absorb'],
-    patch: { eatRatio: 1.05, absorbMult: 0.3, speedMult: 0.05 },
+    patch: { eatRatio: 1.05, absorbMult: 0.4, speedMult: 0.05 },
   },
   titan: {
     id: 'titan',
@@ -81,7 +81,7 @@ export const BRANCHES: Readonly<Record<BranchId, Branch>> = {
     name: 'Titan',
     blurb: 'Lose mass 40% slower. Enemies need to be 30% bigger to eat you.',
     tags: ['slow decay', 'harder to eat', '-speed'],
-    patch: { decayMult: 0.4, beEatenRatio: 1.3, speedMult: -0.1 },
+    patch: { decayMult: 0.6, beEatenRatio: 1.25, speedMult: -0.1 },
   },
 };
 

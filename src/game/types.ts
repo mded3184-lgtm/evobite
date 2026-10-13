@@ -61,6 +61,10 @@ export interface Orb {
   radius: number;
   hue: number;
   alive: boolean;
+  /** World time it appeared, for the pop-in animation. */
+  bornAt: number;
+  /** World time it fades out and respawns elsewhere, so uneaten food never piles up. */
+  expiresAt: number;
 }
 
 export interface RoundStats {

@@ -48,10 +48,10 @@ function autopilotTick(dt) {
   const keys = [
     [0, 14],
     [2.4, 40],
-    [5.2, 125],
-    [8.6, 290],
-    [11.6, 720],
-    [15, 820],
+    [5.2, 135],
+    [8.6, 360],
+    [11.6, 880],
+    [15, 960],
   ];
   let target = keys[keys.length - 1][1];
   for (let i = 1; i < keys.length; i++) {

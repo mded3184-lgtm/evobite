@@ -86,7 +86,7 @@ describe('derived stats', () => {
   });
 
   it('titan slows decay without touching others', () => {
-    expect(statsForPath(['bulk', 'venom', 'grazer', 'titan']).decayMult).toBe(0.4);
+    expect(statsForPath(['bulk', 'venom', 'grazer', 'titan']).decayMult).toBe(0.6);
     expect(statsForPath(['bulk', 'venom', 'grazer', 'apex']).decayMult).toBe(1);
   });
 });
